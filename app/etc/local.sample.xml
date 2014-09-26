@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<config>
+    <default>
+        <middleware>
+            <system>
+                <log>system.log</log> <!-- stdout, syslog or file name -->
+            </system>
+
+            <!-- JSONRPC Client Configuration -->
+            <api>
+                <base_url></base_url>
+                <login></login>
+                <password></password>
+            </api>
+
+            <!-- Pub-Sub Server Configuration -->
+            <pubsub>
+                <active>0</active><!-- indicates whether Redis is used -->
+                <server>127.0.0.1:6379</server><!-- host or host with port -->
+                <command>a09fce0acf1415cf0584a058669df60a</command><!-- alias for the PSUBSCRIBE command -->
+                <timeout>-1</timeout><!-- optional. 0 (or -1) for no timeout, otherwise number of seconds -->
+            </pubsub>
+        </middleware>
+
+        <plugin>
+            <!-- Overrides config from 'Test_Test' plugin's etc/config.xml -->
+            <Test_Test>
+                <whoami>Agent 007</whoami>
+            </Test_Test>
+        </plugin>
+    </default>
+</config>

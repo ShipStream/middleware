@@ -1,0 +1,7 @@
+app/etc/local.xml
+app/code/community/
+!app/code/community/Test
+app/etc/modules/
+tmp
+.modman
+.basedir
