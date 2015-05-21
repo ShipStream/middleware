@@ -17,6 +17,9 @@ final class Middleware
     /** @var null|SimpleXMLElement */
     private $_config;
 
+    /** @var null|SimpleXMLElement */
+    private $_info;
+
     /** @var null|string */
     private $_plugin;
     private $_pluginInstance;
@@ -42,7 +45,7 @@ final class Middleware
         }
         $object->_setMiddleware($this);
         $this->_pluginInstance = $object;
-        $this->_pluginInstance->_isDebug($debug);
+        $this->_pluginInstance->isDebug($debug);
     }
 
     /**
@@ -195,17 +198,20 @@ final class Middleware
     }
 
     /**
-     * Retrieve configuration file as Simple XML Element object
+     * Retrieve configuration value
      *
      * @param string $path
-     * @return SimpleXMLElement
+     * @return null|string
      * @throws Exception
      */
     public function getConfig($path)
     {
-        if ( ! $this->_config)
-        {
-            // Load plugin config
+        if (empty($path)) {
+            return NULL;
+        }
+
+        if ( ! $this->_config) {
+            // Load plugin configuration as SimpleXMLElement object
             $file = $this->getPluginPath($this->_plugin) . DS . 'etc' . DS . 'config.xml';
             if ( ! file_exists($file)) {
                 throw new Exception(sprintf('The configuration file "%s" does not exist.', $file));
@@ -215,7 +221,7 @@ final class Middleware
             }
             $pluginConfig = simplexml_load_file($file, 'Varien_Simplexml_Element'); /* @var $pluginConfig Varien_Simplexml_Element */
             if ( ! $pluginConfig) {
-                throw new Exception('Error loading plugin config.xml.');
+                throw new Exception('Error loading config.xml file.');
             }
 
             // Load local config and merge over plugin config
@@ -227,14 +233,47 @@ final class Middleware
             $this->_config = $pluginConfig;
         }
 
-        if (empty($path)) {
-            return NULL;
-        }
         $result = $this->_config->descend('default/'.$path);
         if ($result === FALSE) {
             return NULL;
         }
         return $result->__toString();
+    }
+
+    /**
+     * Retrieve static information value
+     *
+     * @param string $path
+     * @return null|string|Varien_Simplexml_Element[]
+     * @throws Exception
+     */
+    public function getPluginInfo($path)
+    {
+        if (empty($path)) {
+            return NULL;
+        }
+
+        // Load plugin static information as SimpleXMLElement object
+        if ( ! $this->_info) {
+            $file = $this->getPluginPath($this->_plugin) . DS . 'etc' . DS . 'plugin.xml';
+            if ( ! file_exists($file)) {
+                throw new Exception(sprintf('The plugin information file "%s" does not exist.', $file));
+            }
+            if ( ! is_readable($file)) {
+                throw new Exception(sprintf('The plugin information file "%s" is not readable.', $file));
+            }
+            $pluginInfo = simplexml_load_file($file, 'Varien_Simplexml_Element'); /** @var $pluginInfo Varien_Simplexml_Element */
+            if ( ! $pluginInfo) {
+                throw new Exception('Error loading plugin.xml file.');
+            }
+            $this->_info = $pluginInfo;
+        }
+
+        $result = $this->_info->descend($path);
+        if ($result === FALSE) {
+            return NULL;
+        }
+        return $result->hasChildren() ? (array) $result : $result->__toString();
     }
 
     /**
@@ -303,6 +342,9 @@ final class Middleware
     public function saveCache($key, $data, $lifetime)
     {
         $path = BP . DS . 'tmp' . DS . 'cache-'.$key;
+        if ($lifetime === FALSE) {
+            $lifetime = 7200;
+        }
         $expires = $lifetime ? time() + $lifetime : NULL;
         if ( ! is_writable(dirname($path))) {
             throw new Exception('Cannot write to tmp directory.');
@@ -310,4 +352,107 @@ final class Middleware
         return !! file_put_contents($path, serialize(array('data' => $data, 'expires' => $expires)));
     }
 
+    /**
+     * @param $key
+     */
+    public function removeCache($key) {
+        $path = BP . DS . 'tmp' . DS . 'cache-'.$key;
+        if (file_exists($path)) {
+            unlink($path);
+        }
+    }
+
+    /**
+     * Render page HTML
+     *
+     * @param string $template
+     * @return string
+     * @throws Exception
+     */
+    public function renderPage($template)
+    {
+        $dir = BP . DS . 'views';
+        $fileName = pathinfo($template, PATHINFO_FILENAME);
+        $templatePath = $dir . DS . $template;
+        if ( ! file_exists($templatePath)) {
+            throw new Exception(sprintf('The template file "%s" does not exist.', $template));
+        }
+        if ( ! is_readable($templatePath)) {
+            throw new Exception(sprintf('The template file "%s" is not readable.', $template));
+        }
+
+        $rendererPath = $dir . DS . $fileName . '.php';
+
+        $plugin = $this->_pluginInstance; /** @var $plugin Plugin_Abstract */
+
+        ob_start();
+        if (file_exists($rendererPath) && is_readable($rendererPath)) {
+            include $rendererPath;
+        }
+        include $templatePath;
+        $html = ob_get_clean();
+        return $html;
+    }
+
+    /**
+     * @param string $method
+     * @param array $query
+     * @param array $headers
+     * @param string $data
+     * @throws Exception
+     */
+    public function callbackController($method, $query, $headers, $data)
+    {
+        ini_set('zlib.output_compression', 'Off');
+        header('Content-Encoding: none', TRUE);
+        header('Connection: close', TRUE);
+        ob_start();
+
+        if (empty($query['secret_key'])) {
+            throw new Exception('Unknown secret key.', 409);
+        }
+        if ($query['secret_key'] != $this->getConfig('middleware/api/secret_key')) {
+            throw new Exception('Invalid secret key.');
+        }
+        if ( ! is_callable(array($this->_pluginInstance, $method))) {
+            throw new Exception('Unknown plugin method.', 409);
+        }
+        if (FALSE === ($response = $this->_pluginInstance->$method($query, $headers, $data))) {
+            throw new Exception('Callback request failed.', 409);
+        }
+
+        $size = ob_get_length();
+        header("Content-Length: $size", TRUE);
+        http_response_code(200);
+        ob_end_flush();
+    }
+
+    /**
+     * Retrieve OAuth url
+     *
+     * @param array $params
+     * @return string
+     */
+    public function oauthGetUrl($params = array())
+    {
+        return $this->_pluginInstance->oauthGetUrl($params);
+    }
+
+    /**
+     * @param array $request
+     * @return void
+     */
+    public function oauthHandleRedirect(array $request)
+    {
+        $this->_pluginInstance->oauthHandleRedirect($request);
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     */
+    public function oauthDisconnect(array $params)
+    {
+        $this->_pluginInstance->oauthDisconnect($params);
+    }
 }

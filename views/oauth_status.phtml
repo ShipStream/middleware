@@ -1,0 +1,30 @@
+<?php /** @var $plugin Plugin_Abstract */ ?>
+<html>
+<head>
+    <title>OAuth Connection</title>
+</head>
+<body>
+    <h1>OAuth Connection</h1>
+    <hr />
+    <?php if ($plugin->getPluginInfo('info/oauth/enabled')): ?>
+        <?php if ($configErrors = getOauthConfigErrors($plugin)): ?>
+            <?php echo implode("<br />", $configErrors) ?>
+        <?php elseif ($validationErrors = getOauthValidationErrors($plugin)): ?>
+            <?php echo $validationErrors ?>
+        <?php elseif (getOauthConnectionActive($plugin)): ?>
+            <?php if ($testErrors = getOauthTestErrors($plugin)): ?>
+                <?php echo $testErrors ?>
+            <?php else: ?>
+                <strong><?php echo 'Connection Active' ?></strong><br />
+                <?php echo renderOauthTestData($plugin) ?><br />
+                <?php echo getOauthDisconnectButton($plugin) ?>
+            <?php endif ?>
+        <?php else: ?>
+            <?php echo 'Click the button below to connect.' ?><br />
+            <?php echo $plugin->oauthGetConnectButton() ?>
+        <?php endif ?>
+    <?php else: ?>
+        <?php echo 'OAuth is disabled.' ?>
+    <?php endif ?>
+</body>
+</html>

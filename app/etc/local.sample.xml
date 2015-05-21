@@ -3,6 +3,7 @@
     <default>
         <middleware>
             <system>
+                <base_url>http://example.com/</base_url> <!-- public url to 'pub' directory -->
                 <log>system.log</log> <!-- stdout, syslog or file name -->
             </system>
 
@@ -11,6 +12,7 @@
                 <base_url></base_url>
                 <login></login>
                 <password></password>
+                <secret_key></secret_key>
             </api>
 
             <!-- Pub-Sub Server Configuration -->
@@ -23,10 +25,10 @@
         </middleware>
 
         <plugin>
-            <!-- Overrides config from 'Test_Test' plugin's etc/config.xml -->
-            <Test_Test>
+            <!-- Overrides config from 'ShipStream_Test' plugin's etc/config.xml -->
+            <ShipStream_Test>
                 <whoami>Agent 007</whoami>
-            </Test_Test>
+            </ShipStream_Test>
         </plugin>
     </default>
 </config>

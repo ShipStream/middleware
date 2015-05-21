@@ -341,7 +341,8 @@ class Varien_Simplexml_Element extends SimpleXMLElement
             if (isset($this->$sourceName)) {
                 // if target already has children return without regard
                 if ($this->$sourceName->children()) {
-                    return $this;
+                    /** Custom. Use config value without applying backend models etc. */
+                    //return $this;
                 }
                 if ($overwrite) {
                     unset($this->$sourceName);

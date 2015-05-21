@@ -11,8 +11,8 @@ class Plugin_Source_Yesno implements Plugin_Source_Interface
     public function getOptions(Plugin_Abstract $plugin)
     {
         return [
-            ['value' => 1, 'label'=>Mage::helper('adminhtml')->__('Yes')],
-            ['value' => 0, 'label'=>Mage::helper('adminhtml')->__('No')],
+            ['value' => 1, 'label' => 'Yes'],
+            ['value' => 0, 'label' => 'No'],
         ];
     }
 }

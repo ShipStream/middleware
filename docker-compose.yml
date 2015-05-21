@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  php-fpm:
+    image: shipstream/middleware:7.4-fpm
+    volumes:
+      - .:/var/www/html
+
+  nginx:
+    image: library/nginx:latest
+    ports:
+      - "${HOST_PORT:-80}:80"
+    links:
+      - php-fpm
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/templates/default.conf.template:ro
+      - .:/var/www/html
+
+  cli:
+    image: shipstream/middleware:7.4-fpm
+    working_dir: /var/www/html
+    entrypoint: php
+    user: www-data
+    volumes:
+      - .:/var/www/html
