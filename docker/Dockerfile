@@ -10,3 +10,4 @@ RUN if test -n "$XDEBUG"; then \
       pecl install xdebug && docker-php-ext-enable xdebug && rm -rf /tmp/* \
     ;fi
 ENV XDEBUG_CONFIG="idekey=PHPSTORM client_port=9000 client_host=host.docker.internal"
+ENV XDEBUG_MODE=develop,debug

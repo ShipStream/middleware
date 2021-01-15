@@ -124,8 +124,8 @@ class Middleware_JsonClient extends Zend_Http_Client
 
         if ($response->isSuccessful()) {
             $return = json_decode($response->getBody(), TRUE);
-            if ($return === NULL || ! array_key_exists('result', $return)) {
-                throw new Exception('Invalid response: '.$response->getBody());
+            if ($return === NULL) {
+                throw new Exception('Invalid response ('.$response->getStatus().'): '.$response->getBody());
             }
             if (isset($return['error'])) {
                 $code = ($return['error']['code'] * -1) - 32000;
