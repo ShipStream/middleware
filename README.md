@@ -24,7 +24,7 @@ you can just as well use it as the basis for your integration or as a standalone
 
 
 Requirements
---------
+------------
 
 * The supported platform for developing Middleware plugins is PHP 7.4 on Docker (container build files provided).
 * A publicly accessible URL is required if your plugin receives third-party webhooks or responds to events from
@@ -41,12 +41,13 @@ Developing on Mac requires [Docker Desktop for Mac](https://docs.docker.com/dock
 
 
 Installation
---------
+------------
 
-1. Clone this repository to a new directory:
+1. Clone this repository to a new directory and update files permissions:
    ```
    $ git clone https://github.com/shipstream/middleware.git
    $ cd middleware
+   $ chmod go+rwX tmp logs
    ```
    
 2. Copy and edit the sample config file to add your configuration:
@@ -64,9 +65,9 @@ Installation
            <log>stdout</log>
          </system>
          <api>
-           <base_url>https://[WEBSITE BASE URL]/api/jsonrpc</base_url>
-           <login>[API LOGIN]</login>
-           <password>[API PASSWORD]</password>
+           <base_url>https://example.shipstream.app/api/jsonrpc</base_url>
+           <login>{api_username}</login>
+           <password>{api_password}</password>
          </api>
        </middleware>
      </default>
@@ -78,11 +79,13 @@ Installation
    $ bin/modman init
    $ bin/modman clone https://github.com/shipstream/plugin-test.git
    $ bin/mwrun ShipStream_Test update_ip
+   Creating middleware_cli_run ... done
+   Agent 007's IP is x.x.x.x, last updated at 2020-01-19T14:41:23+00:00.
    ```
 
 
-Create Your Own Plugin
---------
+Creating Your Own Plugin
+------------------------
 
 The easiest way to start your own plugin is to fork the [`ShipStream_Test`](https://github.com/shipstream/plugin-test)
 project which you would have cloned in step 3 and then rename and edit it as needed.
@@ -111,17 +114,46 @@ After modifying the modman file be sure to run the `modman deploy` command to up
 $ bin/modman deploy-all
 ```
 
-Handy Tips
---------
+Developer Guide
+===============
+
+### Plugin Configuration
+
+### HTTP Client
+
+### ShipStream API Calls
+
+### State Management
 
 ### Running plugin methods
 
-Plugin methods can be run by executing the following command in the command line:
+Any public plugin method can be run by executing the following command in the command line specifying the plugin
+namespace and method name.
 
 ```
-$ bin/mwrun ShipStream_Test updateIp
+$ bin/mwrun ShipStream_Test update_ip
 ```
+
+### User-triggered Actions
 
 ### Cron Tasks
 
-If just developing, you do not need to schedule a crontab task, you can just run the cron method using `mwrun` as seen above.
+If just hacking on a plugin, you do not need to schedule a crontab task; you can just run the cron task methods
+using `mwrun` as seen above.
+
+### ShipStream Events
+
+### Third-party Webhook Events
+
+### Third-party RPC
+
+### OAuth
+
+### Event Queue
+
+### Global Locking
+
+### Logging
+
+### Caching
+
