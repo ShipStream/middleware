@@ -26,14 +26,23 @@ you can just as well use it as the basis for your integration or as a standalone
 Requirements
 --------
 
-* The supported platform for developing Middleware plugins is PHP 7.4 on Docker.
+* The supported platform for developing Middleware plugins is PHP 7.4 on Docker (container build files provided).
 * A publicly accessible URL is required if your plugin receives third-party webhooks or responds to events from
   ShipStream via ShipStream's webhooks.
-* [modman](https://github.com/colinmollenhour/modman) is used to deploy plugins.
+
+### Windows
+
+Developing on Windows requires [WSL2 (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+and [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/).
+
+### Mac
+
+Developing on Mac requires [Docker Desktop for Mac](https://docs.docker.com/docker-for-mac/install/).
 
 
 Installation
 --------
+
 1. Clone this repository to a new directory:
    ```
    $ git clone https://github.com/shipstream/middleware.git
@@ -64,24 +73,17 @@ Installation
    </config>
    ```
    
-4. Fix permissions for the CLI using a `.env` file to store your uid and gid:
+3. Clone the `ShipStream_Test` plugin and run the `update_ip` method to confirm a successful setup!
    ```
-   echo -e "USER_ID=$(id -u)\nGROUP_ID=$(id -g)" > .env
-   ```
-   
-3. Clone the `ShipStream_Test` plugin and run the `update_ip` method to confirm a successful setup:
-   ```
-   $ modman init
-   $ modman clone https://github.com/shipstream/plugin-test.git
-   $ ./mwrun ShipStream_Test update_ip
+   $ bin/modman init
+   $ bin/modman clone https://github.com/shipstream/plugin-test.git
+   $ bin/mwrun ShipStream_Test update_ip
    ```
 
-### Windows Users
-
-Developing on Windows requires [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to run Docker. 
 
 Create Your Own Plugin
 --------
+
 The easiest way to start your own plugin is to fork the [`ShipStream_Test`](https://github.com/shipstream/plugin-test)
 project which you would have cloned in step 3 and then rename and edit it as needed.
 
@@ -95,17 +97,18 @@ The minimal required file structure from the root of the middleware directory is
 * app/etc/modules
   * {COMPANY_NAME}_{MODULE_NAME}.xml
 
-As such, the `modman` file for the `ShipStream_Test` plugin looks like this:
+Modman is used to symlink the files into the project directories so the `modman` file for the
+`ShipStream_Test` plugin looks like this:
 
 ```
-code                   app/code/community/Test/Test/
+code                   app/code/community/ShipStream/Test/
 ShipStream_Test.xml    app/etc/modules/
 ```
 
-After renaming files be sure to run the modman deploy command to update symlinks:
+After modifying the modman file be sure to run the `modman deploy` command to update symlinks:
 
 ```
-$ docker-compose run cli modman deploy-all
+$ bin/modman deploy-all
 ```
 
 Handy Tips
@@ -116,9 +119,9 @@ Handy Tips
 Plugin methods can be run by executing the following command in the command line:
 
 ```
-$ ./mwrun ShipStream_Test updateIp
+$ bin/mwrun ShipStream_Test updateIp
 ```
 
 ### Cron Tasks
 
-If just developing you do not need to schedule a cron task, you can just run the cron method using `mwrun`.
+If just developing, you do not need to schedule a crontab task, you can just run the cron method using `mwrun` as seen above.
