@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   php-fpm:
-    image: shipstream/middleware:7.4-fpm
+    build: ./docker
     volumes:
       - .:/var/www/html
 
@@ -17,9 +17,8 @@ services:
       - .:/var/www/html
 
   cli:
-    image: shipstream/middleware:7.4-fpm
+    build: ./docker
     working_dir: /var/www/html
-    entrypoint: php
     user: www-data
     volumes:
       - .:/var/www/html
