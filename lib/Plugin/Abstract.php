@@ -5,6 +5,15 @@
  */
 abstract class Plugin_Abstract implements Plugin_Interface
 {
+    const EMERG   = 0;  // Emergency: system is unusable
+    const ALERT   = 1;  // Alert: action must be taken immediately
+    const CRIT    = 2;  // Critical: critical conditions
+    const ERR     = 3;  // Error: error conditions
+    const WARN    = 4;  // Warning: warning conditions
+    const NOTICE  = 5;  // Notice: normal but significant condition
+    const INFO    = 6;  // Informational: informational messages
+    const DEBUG   = 7;  // Debug: debug messages
+
     /** @var string */
     private $code;
     
@@ -254,6 +263,25 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
+     * Retrieve webhook url
+     *
+     * @param string|null $method
+     * @return string
+     */
+    final public function getWebhookUrl($method = NULL)
+    {
+        $secretKey = $this->middleware->getConfig('middleware/api/secret_key');
+        $params = [
+            'plugin' => $this->code,
+            'secret_key' => $secretKey,
+        ];
+        if ($method) {
+            $params['method'] = $method;
+        }
+        return $this->_getBaseUrl().'webhook.php?'.http_build_query($params, '', '&');
+    }
+
+    /**
      * Retrieve callback url
      *
      * @param string $method
@@ -268,6 +296,32 @@ abstract class Plugin_Abstract implements Plugin_Interface
             'secret_key' => $this->middleware->getConfig('middleware/api/secret_key'),
         ];
         return $this->_getBaseUrl().'rpc.php?'.http_build_query($params, '', '&');
+    }
+
+    /**
+     * @param Exception $exception
+     * @param string    $rawData
+     * @param bool      $canNotify
+     * @param string|null $prefix
+     */
+    final public function reportError(Exception $exception, $rawData, $canNotify, $prefix = NULL)
+    {
+        // Wrap system exceptions
+        if ( ! $exception instanceof Plugin_Exception) {
+            $exception = new Plugin_Exception('Unexpected plugin error.', 0, $exception);
+        }
+
+        $notifyMsg = $canNotify ? 'Notified' : 'Not Notified';
+        $prefix = $prefix ?: '-';
+        $this->log("$prefix: {$exception->getMessage()} - $notifyMsg - Data:\n$rawData", self::ERR, 'errors.log');
+    }
+
+    /**
+     * @param string $rawData
+     */
+    final public function resolveError($rawData)
+    {
+        $this->log("Resolved errors for data: $rawData", self::ERR, 'errors.log');
     }
 
     /**
