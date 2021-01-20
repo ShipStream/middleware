@@ -1,24 +1,53 @@
 ShipStream Merchant API Middleware
 ========
-The ShipStream Merchant API Middleware is an abstracted and lightweight version of ShipStream's production environment.
-With it, you can develop and test plugins destined to become integrated ShipStream WMS plugins, or use it as a standalone
-"middle-man" between your systems and ShipStream.
 
+The ShipStream Merchant API Middleware is an abstracted and lightweight version of ShipStream's production
+environment. With it, you can develop and test plugins destined to become integrated ShipStream WMS plugins,
+or use it as a standalone "middle-man" app between your systems and ShipStream.
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Developer Guide](#developer-guide)
+  - [Plugin Skeleton](#plugin-skeleton)
+  - [Plugin Information](#plugin-information)
+  - [Plugin Configuration](#plugin-configuration)
+  - [ShipStream API Calls](#shipstream-api-calls)
+  - [HTTP Client](#http-client)
+  - [State Management](#state-management)
+  - [Manual Actions](#manual-actions)
+  - [Cron Tasks](#cron-tasks)
+  - [ShipStream Events](#shipstream-events)
+  - [Third-party Webhooks](#third-party-webhooks)
+  - [Third-party Remote Callbacks](#third-party-remote-callbacks)
+  - [Error Handling and Reporting](#error-handling-and-reporting)
+  - [Job Queue](#job-queue)
+  - [Global Locking](#global-locking)
+  - [Logging](#logging)
+  - [Caching](#caching)
+  - [OAuth](#oauth)
+- [Merchant API Documentation](https://docs.shipstream.io) (external link)
 
 Features
 --------
 ShipStream plugins support the following features which work exactly the same in both the middleware environment (this repository)
 and the production environment (ShipStream WMS).
 
-* Interact with ShipStream's [Merchant API](https://docs.shipstream.io) either as an embedded code or over https 
-* Run methods periodically via cron jobs
+* Interact with ShipStream's [Merchant API](https://docs.shipstream.io) either as an embedded plugin or over https
+* Simple configuration
+* Run actions on demand
+* Run actions periodically via cron jobs
 * Respond to ShipStream events in real time (via Webhooks if using the middleware environment)
-* Respond to third-party Webhook events
-* Queue tasks to be executed at a later time or in the background with automatic retries
-* Use state management and caching for efficiency
+* Respond to third-party webhook events and remote callbacks
+* Queue tasks to be executed in the background with error reporting and user-directed retries
+* Use state management and caching for ease of use and efficiency
+* Global locking to solve tricky race conditions
+* Perform OAuth authentication via command line or browser
 
 A plugin that is installed on the production environment can be configured by the user via the Merchant Panel as a
-"Subscription" or run in the middleware environment with a very simple installation using our Docker container.
+"Subscription" or run in the middleware environment with a very simple installation using Docker Compose.
 Either way, the functionality of the plugin should be identical. While the "middleware" is intended to be mainly a
 development environment, you can just as well use it as the basis for your integration or as a standalone app on
 your own hosting environment.
@@ -35,7 +64,7 @@ multiple brands names and have a separate shopping cart for each brand name.
 Requirements
 ------------
 
-* The supported platform for developing Middleware plugins is PHP 7.4 on Docker (container build files provided).
+* The supported platform for developing ShipStream plugins is PHP 7.4 on Docker (container build files provided).
 * A publicly accessible URL is required if your plugin receives third-party webhooks or responds to events from
   ShipStream via ShipStream's webhooks.
 
@@ -104,6 +133,8 @@ state data is not shared between subscriptions even if they are used by the same
 The easiest way to start your own plugin is to fork the [`ShipStream_Test`](https://github.com/shipstream/plugin-test)
 project which you would have cloned in step 3 and then rename and edit it as needed.
 
+## Plugin Skeleton
+
 The minimal required file structure from the root of the middleware directory is as follows:
 
 * app/code/community/{COMPANY_NAME}/{MODULE_NAME}
@@ -116,23 +147,6 @@ The minimal required file structure from the root of the middleware directory is
 * modman
 
 Additional libraries and files may be added within the module directory as necessary and autoloaded using PSR-1 standards.
-
-### modman
-
-Rather than mix your plugin files into the middleware environment it is recommended to use `bin/modman`
-to symlink the files into the project directories so the `modman` file for the `ShipStream_Test` plugin
-may look like this:
-
-```
-code                   app/code/community/ShipStream/Test/
-ShipStream_Test.xml    app/etc/modules/
-```
-
-After modifying the modman file be sure to run the `modman deploy` command to update symlinks:
-
-```
-$ bin/modman deploy-all
-```
 
 ### Plugin Class
 
@@ -151,8 +165,24 @@ class ShipStream_Test_Plugin extends Plugin_Abstract
 }
 ```
 
+### modman
 
-## Register Plugin
+Rather than mix your plugin files into the middleware environment it is recommended to use `bin/modman`
+to symlink the files into the project directories so the `modman` file for the `ShipStream_Test` plugin
+may look like this:
+
+```
+code                   app/code/community/ShipStream/Test/
+ShipStream_Test.xml    app/etc/modules/
+```
+
+After modifying the modman file be sure to run the `modman deploy` command to update symlinks:
+
+```
+$ bin/modman deploy-all
+```
+
+### Register Plugin
 
 The plugin is registered to the production environment using an XML file placed in `app/etc/modules` named after the
 plugin namespace. This file is not required for the middleware environment to function.
@@ -171,7 +201,7 @@ Example file contents for `app/etc/modules/ShipStream_Test.xml`:
 </config>
 ```
 
-## config.xml
+### config.xml
 
 The `config.xml` is used to set the plugin version and the default configuration values. Here is a `config.xml` example
 for the `ShipStream_Test` plugin which sets the version to '0.1' and adds some default configuration values.
@@ -200,20 +230,19 @@ for the `ShipStream_Test` plugin which sets the version to '0.1' and adds some d
 </config>
 ```
 
-See the [Events](#events) section for more on the `<events>` node and [plugin.xml](#plugin-xml) for more on making
-the configuration accessible to the user.
+See the [ShipStream Events](#shipstream-events) section for more on the `<events>` node and [plugin.xml](#pluginxml)
+for more on making the configuration accessible to the user.
 
-## plugin.xml
+### plugin.xml
 
 The `plugin.xml` file provides the remaining plugin metadata in the following nodes:
 
-- `<info>` Plugin information and feature flags.
-- `<actions>` Buttons that the user can click in the UI to trigger manual actions.
-- `<routes>` Definition of urls which should map to plugin method for receiving external requests. 
-- `<config>` Form fields that will be presented to the user for configuring the subscription.
-- `<crontab>` Cron tasks which will be automatically run in the production environment.
-
-All of these topics are covered in more detail in their individual sections below.
+- `<info>` Plugin information and feature flags ([Plugin Information](#plugin-information))
+- `<actions>` Buttons that the user can click in the UI to trigger manual actions. ([Plugin Configuration](#plugin-configuration))
+- `<config>` Form fields that will be presented to the user for configuring the subscription ([Plugin Configuration](#plugin-configuration))
+- `<routes>` Definition of urls which should map to plugin method for receiving external requests
+  ([Third-party Remote Callbacks](#third-party-remote-callbacks))
+- `<crontab>` Cron tasks which will be automatically run in the production environment ([Cron Tasks](#cron-tasks))
 
 ## Plugin Information
 
@@ -336,8 +365,6 @@ plugin.xml:
 </plugin>
 ```
 
-## HTTP Client
-
 ## ShipStream API Calls
 
 You may call ShipStream API methods from the plugin using the `call` method so there is no need to deal with
@@ -353,6 +380,10 @@ Example:
 $inventory = $this->call('inventory.list', 'SKU-A');
 // [['sku' => 'SKU-A', 'qty_advertised' => '0.0000', ...]]
 ```
+
+## HTTP Client
+
+* TODO*
 
 ## State Management
 
@@ -371,7 +402,7 @@ $data = $this->getState('test');
 $this->log("{$data['my_name']} last updated at ".date('c', $data['last_updated']).".");
 ```
 
-## Actions / Other plugin methods
+## Manual Actions
 
 Any public plugin method can be run by executing the following command in the command line specifying the plugin
 namespace and method name. You can also allow the user to trigger methods manually by defining an "action" node in
