@@ -578,7 +578,7 @@ $url = $this->getWebhookUrl('someTopic');
 Or via the CLI:
 
 ```
-$ bin/mwrun ShipStream_Test getWebhookUrl
+$ bin/mwrun ShipStream_Test --webhook-url
 ```
 
 The following example demonstrates how to handle Shopify webhooks using HMAC to verify the authenticity for security:
@@ -669,6 +669,8 @@ plugin's PHP method using the `plugin.xml` file.
 $url = $this->getCallbackUrl('testCallback');
 ```
 
+plugin.xml:
+
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <plugin>
@@ -711,6 +713,13 @@ class ShipStream_Test_Plugin extends Plugin_Abstract
         throw $e;
     }
 }
+```
+
+The callback url should be automatically regsitered with the third-party but you can get the url generated for testing
+with the following command:
+
+```
+$ bin/mwrun ShipStream_Test --callback-url testCallback
 ```
 
 ## Error Handling and Reporting

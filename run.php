@@ -5,10 +5,11 @@ if (php_sapi_name() !== 'cli' || ! isset($argv) || ! is_array($argv) || ! isset(
 
 $usage = "
 Usage: bin/mwrun <plugin> <method>|--info|--list|--listen [--debug]
-  --list             List all methods that can be invoked from the command line
-  --listen           Connect to Redis server for receiving ShipStream events
-  --respond-url      Show webhook url for receiving ShipStream events
-  --webhook-url      Show webhook url for receiving third-party webhooks
+  --list                 List all methods that can be invoked from the command line
+  --listen               Connect to Redis server for receiving ShipStream events
+  --respond-url          Show url for receiving ShipStream events
+  --webhook-url          Show url for receiving third-party webhooks
+  --callback-url <name>  Show url for receiving callback requests
 ";
 
 error_reporting(E_ALL | E_STRICT);
@@ -36,6 +37,12 @@ try {
         exit;
     } else if ($method === '--webhook-url') {
         echo $middleware->getWebhookUrl()."\n";
+        exit;
+    } else if ($method === '--callback-url') {
+        if (empty($argv[3])) {
+            throw new Exception('Please specify the first argument to getCallbackUrl after "--callback-url"');
+        }
+        echo $middleware->getCallbackUrl($argv[3])."\n";
         exit;
     } else if ($method === '--listen') {
         while (1) {

@@ -378,12 +378,15 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function getCallbackUrl($method)
     {
+        if ( ! $this->getPluginInfo('routes/'.$method)) {
+            throw new Exception(sprintf('There is no route defined for %s in %s', $method, $this->code));
+        }
         $params = [
             'plugin' => $this->code,
             'method' => $method,
             'secret_key' => $this->middleware->getConfig('middleware/api/secret_key'),
         ];
-        return $this->_getBaseUrl().'rpc.php?'.http_build_query($params, '', '&');
+        return $this->_getBaseUrl().'callback.php?'.http_build_query($params, '', '&');
     }
 
     /**
@@ -533,6 +536,9 @@ abstract class Plugin_Abstract implements Plugin_Interface
     final private function _getBaseUrl()
     {
         $baseUrl = trim($this->middleware->getConfig('middleware/system/base_url'));
+        if ( ! $baseUrl) {
+            throw new Exception('The base url is not configured (middleware/system/base_url).');
+        }
         $baseUrl .= substr($baseUrl, -1) != '/' ? '/' : '';
         return $baseUrl;
     }

@@ -32,14 +32,15 @@ try {
     unset($headers['HOST'], $headers['X_FORWARDED_FOR']);
     $data = file_get_contents('php://input');
 
+    if ($debug) {
+        $middleware->log(sprintf('Received callback for %s/%s', $plugin, $method));
+    }
     $middleware->callbackController($method, $query, $headers, $data);
 } catch (Exception $e) {
-    if ($debug) {
-        if (empty($middleware)) {
-            error_log($e->getMessage());
-        } else {
-            $middleware->log("{$e->getCode()} {$e->getMessage()}");
-        }
+    if (empty($middleware)) {
+        error_log($e->getMessage());
+    } else {
+        $middleware->log("{$e->getCode()} {$e->getMessage()}");
     }
     http_response_code($e->getCode() ?: 500);
 }

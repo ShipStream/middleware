@@ -433,17 +433,18 @@ final class Middleware
         if ($query['secret_key'] != $this->getConfig('middleware/api/secret_key')) {
             throw new Exception('Invalid secret key.');
         }
-        if ( ! is_callable(array($this->_pluginInstance, $method))) {
+        $callMethod = $this->_pluginInstance->getPluginInfo('routes/'.$method);
+        if ( ! $callMethod) {
             throw new Exception('Unknown plugin method.', 409);
         }
-        if (FALSE === ($response = $this->_pluginInstance->$method($query, $headers, $data))) {
+        if ( ! is_callable(array($this->_pluginInstance, $callMethod))) {
+            throw new Exception('Plugin method is not callable.', 409);
+        }
+        if (FALSE === ($response = $this->_pluginInstance->$callMethod($query, $headers, $data))) {
             throw new Exception('Callback request failed.', 409);
         }
 
-        $size = ob_get_length();
-        header("Content-Length: $size", TRUE);
-        http_response_code(200);
-        ob_end_flush();
+        echo $response;
     }
 
     /**
@@ -471,12 +472,17 @@ final class Middleware
      */
     public function getWebhookUrl()
     {
-        $url = trim($this->getConfig('middleware/system/base_url'));
-        if ( ! $url) {
-            throw new Exception('The base url is not configured (middleware/system/base_url).');
-        }
-        $url = $this->_pluginInstance->getWebhookUrl();
-        return $url;
+        return $this->_pluginInstance->getWebhookUrl();
+    }
+
+    /**
+     * Get callback url
+     *
+     * @return string
+     */
+    public function getCallbackUrl($method)
+    {
+        return $this->_pluginInstance->getCallbackUrl($method);
     }
 
     /**
