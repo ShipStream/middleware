@@ -510,6 +510,22 @@ effective integration much easier and with the end result being much more robust
 are the same as the [Webhook Topics](https://docs.shipstream.io/ref/topics.html) and in fact the middleware environment
 uses webhooks to receive these events.
 
+### Installation
+
+To receive webhook notifications on the middleware environment you will need your Docker container to be accessible
+by the ShipStream instance over http(s) and to know the url that can be used to reach your local environment. For
+example, if your ShipStream instance is local it could be `http://localhost/` or if it is remote it could be your
+public IP or a proxy running a tunnel to your localhost (e.g. [ngrok](https://ngrok.com/)).
+
+1. Configure the correct url for your environment in `config.xml` at `middleware/system/base_url`
+2. Run `bin/mwrun <your-plugin> --url` to get the full url for the webhook endpoint
+3. Test that the url is reachable as expected using `curl <your-url>` (should see "Got it!" if successful)
+4. Add a webhook to ShipStream at System > Plugins > Webhooks > Create Webhook using your url from step 2
+5. Click the newly added Webhook and click "Send Test Event" to verify a successful connection
+6. Inspect `logs/webhooks.log` to verify the webhook was received
+
+### Subscribing to topics
+
 To receive an event for a topic, add the XML elements into your `config.xml` file corresponding to the event topic
 you would like to receive. For example, to receive the `order:created` topic, your `config.xml` file would look like this:
 

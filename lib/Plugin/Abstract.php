@@ -471,6 +471,14 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
 
     /**
+     * Respond to test:ping event from user clicking "Send Test Event"
+     */
+    final public function respondTestPing()
+    {
+        echo "Pong.\n";
+    }
+
+    /**
      * @param \Middleware $middleware
      */
     final public function _setMiddleware(\Middleware $middleware)

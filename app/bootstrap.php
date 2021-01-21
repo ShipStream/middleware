@@ -11,7 +11,7 @@ ini_set('error_log', BP . DS . 'logs' . DS . 'error.log');
 set_include_path(BP . DS . 'lib');
 
 include_once 'Middleware' . DS . 'Autoload.php';
-require 'vendor/autoload.php';
+require BP.DS.'vendor/autoload.php';
 
 final class Middleware
 {
@@ -118,7 +118,7 @@ final class Middleware
     public function respond($topic, $message)
     {
         list($resource, $event) = explode(':', $topic, 2);
-        if ( ! $this->getConfig("plugin/{$this->_plugin}/events/{$resource}/{$event}")) {
+        if ( ! $this->getConfig("plugin/{$this->_plugin}/events/{$resource}/{$event}") && $topic != 'test:ping') {
             throw new Exception(sprintf('The plugin is not configured to respond to the topic "%s".', $topic));
         }
         $methodName = 'respond'.ucfirst($resource).ucfirst($event);
@@ -444,6 +444,39 @@ final class Middleware
         header("Content-Length: $size", TRUE);
         http_response_code(200);
         ob_end_flush();
+    }
+
+    /**
+     * Get url for configuring a webhook in ShipStream to be able to respond to events
+     *
+     * @return string
+     */
+    public function getRespondUrl()
+    {
+        $url = trim($this->getConfig('middleware/system/base_url'));
+        if ( ! $url) {
+            throw new Exception('The base url is not configured (middleware/system/base_url).');
+        }
+        $params = [
+            'plugin' => $this->_plugin,
+        ];
+        $url .= (substr($url, -1) != '/' ? '/' : '').'respond.php?'.http_build_query($params, '', '&');
+        return $url;
+    }
+
+    /**
+     * Get url for registering with third-party webhooks
+     *
+     * @return string
+     */
+    public function getWebhookUrl()
+    {
+        $url = trim($this->getConfig('middleware/system/base_url'));
+        if ( ! $url) {
+            throw new Exception('The base url is not configured (middleware/system/base_url).');
+        }
+        $url = $this->_pluginInstance->getWebhookUrl();
+        return $url;
     }
 
     /**

@@ -40,6 +40,7 @@ try {
         throw new Exception('Message not specified.', 400);
     }
 
+    $middleware->log(sprintf('Received webhook for %s topic with message: %s', $topic, $json), 'webhooks.log');
     $middleware->respond($topic, $message);
 
 } catch (Exception $e) {
