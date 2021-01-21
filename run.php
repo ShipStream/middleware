@@ -9,8 +9,8 @@ error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
 require __DIR__.'/app/bootstrap.php';
 
-$debug = FALSE;
-if ($argc == 4 && $argv[3] == '--debug') {
+$debug = (bool)($_ENV['DEBUG'] ?? FALSE);
+if ( ! $debug && $argc == 4 && $argv[3] == '--debug') {
     $debug = TRUE;
     array_pop($argv);
 }

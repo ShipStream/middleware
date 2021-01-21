@@ -11,6 +11,7 @@ ini_set('error_log', BP . DS . 'logs' . DS . 'error.log');
 set_include_path(BP . DS . 'lib');
 
 include_once 'Middleware' . DS . 'Autoload.php';
+require 'vendor/autoload.php';
 
 final class Middleware
 {
@@ -23,6 +24,9 @@ final class Middleware
     /** @var null|string */
     private $_plugin;
     private $_pluginInstance;
+
+    /** @var resource[] */
+    private $_fileHandles = [];
 
     private static $_instance;
 
@@ -46,6 +50,9 @@ final class Middleware
         $object->_setMiddleware($this);
         $this->_pluginInstance = $object;
         $this->_pluginInstance->isDebug($debug);
+        if (PHP_SAPI === 'cli' && $debug) {
+            echo "Debug mode is ENABLED\n";
+        }
     }
 
     /**
@@ -309,6 +316,18 @@ final class Middleware
     public function logException(Exception $e)
     {
         $this->log("\n" . $e->__toString());
+    }
+
+    /**
+     * @param string $name
+     * @return false|resource
+     */
+    public function getLogFileHandle($name)
+    {
+        if ( ! isset($this->_fileHandles[$name])) {
+            $this->_fileHandles[$name] = fopen(BP . DS . 'logs' . DS . $name, 'a+');
+        }
+        return $this->_fileHandles[$name];
     }
 
     /**

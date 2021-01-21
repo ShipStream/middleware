@@ -3,6 +3,8 @@ version: "3.7"
 services:
   php-fpm:
     build: ./docker
+    environment:
+      - DEBUG=${DEBUG:-0}
     volumes:
       - .:/var/www/html
 
@@ -20,5 +22,7 @@ services:
     build: ./docker
     working_dir: /var/www/html
     user: www-data
+    environment:
+      - DEBUG=${DEBUG:-0}
     volumes:
       - .:/var/www/html

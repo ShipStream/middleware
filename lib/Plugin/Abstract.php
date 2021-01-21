@@ -1,5 +1,12 @@
 <?php
 
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Handler\CurlHandler;
+use GuzzleHttp\Client;
+use GuzzleHttp\Middleware;
+
 /**
  * Abstract class for a plugin
  */
@@ -17,10 +24,10 @@ abstract class Plugin_Abstract implements Plugin_Interface
     /** @var string */
     private $code;
     
-    /** @var Middleware */
+    /** @var \Middleware */
     private $middleware;
 
-    /** @var null|Middleware_JsonClient */
+    /** @var null|\Middleware_JsonClient */
     private $_client;
 
     /** @var bool */
@@ -224,6 +231,87 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
+     * Get the merchant's configured default timezone
+     *
+     * @return \DateTimeZone
+     */
+    final public function getTimeZone()
+    {
+        return new DateTimeZone($this->middleware->getConfig('middleware/system/timezone') ?: 'America/New_York');
+    }
+
+    /**
+     * Get the name of the given warehouse by id (uses cache with 1 hour TTL)
+     *
+     * @param int $id
+     * @return string|null
+     */
+    final public function getWarehouseName($id)
+    {
+        if ( ! ($warehouses = $this->loadCache('$warehouseNames'))) {
+            $warehouses = $this->call('warehouse.list');
+            $warehouseNames = [];
+            foreach ($warehouses as $warehouse) {
+                $warehouseNames[$warehouse['warehouse_id']] = $warehouse['name'];
+            }
+            $this->saveCache('$warehouseNames', $warehouseNames, 3600);
+        }
+
+        return $warehouseNames[$id] ?? NULL;
+    }
+
+    /**
+     * Get an instance of GuzzleClient - reuse this instance as much as possible and request a new instance for
+     * each unique base_uri.
+     *
+     * @param array $options
+     * @return Client
+     */
+    final public function getHttpClient(array $options)
+    {
+        if (empty($options['base_uri'])) {
+            throw new Exception('The "base_uri" option is required.');
+        }
+        if (empty($options['handler'])) {
+            $handlerStack = new HandlerStack();
+            $handlerStack->setHandler(new CurlHandler());
+            $options['handler'] = $handlerStack;
+        }
+        $options['handler']->push(Middleware::httpErrors());
+        $options['handler']->push(Middleware::mapRequest(function (RequestInterface $request) {
+            return $request->withHeader('User-Agent', 'ShipStream-Middleware/1.0 (Plugin;'.$this->code.')');
+        }));
+
+        $debugFileHandle = $this->_isDebug ? $this->middleware->getLogFileHandle('http_client.log') : FALSE;
+        if ($debugFileHandle) {
+            $options['handler']->push(Middleware::tap(
+                function (RequestInterface $request, $options) use ($debugFileHandle) {
+                    fwrite($debugFileHandle, "\n".$request->getBody()->getContents()."\n");
+                },
+                function (RequestInterface $request, $options, $response) use ($debugFileHandle) {
+                    $response->then(
+                        static function (ResponseInterface $response) use ($debugFileHandle) {
+                            fwrite($debugFileHandle, "\n".$response->getBody()->getContents()."\n");
+                            $response->getBody()->rewind();
+                            return $response;
+                        }
+                    );
+                }
+            ));
+        }
+
+        $defaultOptions = [
+            'allow_redirects' => FALSE,
+            'connect_timeout' => 1.5,
+            'timeout' => 30,
+            'debug' => $debugFileHandle,
+        ];
+        $options = array_merge($defaultOptions, $options);
+
+        return new Client($options);
+    }
+
+    /**
      * Log messages
      *
      * @param string  $message
@@ -383,9 +471,9 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
 
     /**
-     * @param Middleware $middleware
+     * @param \Middleware $middleware
      */
-    final public function _setMiddleware(Middleware $middleware)
+    final public function _setMiddleware(\Middleware $middleware)
     {
         $this->middleware = $middleware;
     }
@@ -420,7 +508,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
                     'debug'     => $this->isDebug(),
                 ), array(
                     'timeout'   => 20,
-                    'useragent' => 'ShipStream Middleware ('.$this->code.')',
+                    'useragent' => 'ShipStreamMiddleware/1.0 ('.$this->code.')',
                     'keepalive' => TRUE,
                 ),
                 $this->middleware);

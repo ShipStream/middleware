@@ -5,6 +5,7 @@
             <system>
                 <base_url>http://example.com/</base_url> <!-- public url to 'pub' directory -->
                 <log>system.log</log> <!-- stdout, syslog or file name -->
+                <timezone>America/New_York</timezone>
             </system>
 
             <!-- JSONRPC Client Configuration -->

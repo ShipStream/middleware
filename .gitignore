@@ -5,3 +5,6 @@ app/etc/modules/
 tmp
 .modman
 .basedir
+composer.lock
+vendor
+.env

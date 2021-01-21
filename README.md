@@ -28,6 +28,7 @@ or use it as a standalone "middle-man" app between your systems and ShipStream.
   - [Logging](#logging)
   - [Caching](#caching)
   - [OAuth](#oauth)
+  - [Composer Dependencies](#composer-dependencies)
 - [Merchant API Documentation](https://docs.shipstream.io) (external link)
 
 Features
@@ -81,11 +82,12 @@ Developing on Mac requires [Docker Desktop for Mac](https://docs.docker.com/dock
 Installation
 ------------
 
-1. Clone this repository to a new directory and update files permissions:
+1. Clone this repository to a new directory and update files permissions and install dependencies:
    ```
    $ git clone https://github.com/shipstream/middleware.git
    $ cd middleware
    $ chmod go+rwX tmp logs
+   $ bin/update
    ```
    
 2. Copy and edit the sample config file to add your configuration:
@@ -121,17 +123,35 @@ Installation
    Agent 007's IP is x.x.x.x, last updated at 2020-01-19T14:41:23+00:00.
    ```
 
+### Advanced
+
+You can use a `.env` file in the root of the project to set some configuration options:
+
+- `DEBUG` Enable for HTTP request logging and other debug features (default is disabled).
+- `HOST_PORT` Choose a different port to expose (default is 80).
 
 Developer Guide
 ===============
 
-In the production environment a plugin runs in the context of a single merchant after being added as a "subscription"
-via the ShipStream Admin or Client user interface. A merchant can have multiple subscriptions and the configuration and
-state data is not shared between subscriptions even if they are used by the same merchant or use the same key names
-(state keys are namespaced to each subscription to avoid conflicts).
-
 The easiest way to start your own plugin is to fork the [`ShipStream_Test`](https://github.com/shipstream/plugin-test)
 project which you would have cloned in step 3 and then rename and edit it as needed.
+
+## Debug Mode
+
+Debug mode can be enabled in one of the following ways:
+
+- Use the DEBUG environment variable when running a command
+  ```
+  $ DEBUG=1 bin/mwrun ShipStream_Test update_ip
+  ```
+- Pass the `--debug` argument at the end of a command
+  ```
+  $ bin/mwrun ShipStream_Test update_ip --debug
+  ```
+- Set the DEBUG environment variable in the `.env` file
+  ```
+  $ echo 'DEBUG=1' >> .env
+  ```
 
 ## Plugin Skeleton
 
@@ -146,7 +166,8 @@ The minimal required file structure from the root of the middleware directory is
   * {COMPANY_NAME}_{MODULE_NAME}.xml
 * modman
 
-Additional libraries and files may be added within the module directory as necessary and autoloaded using PSR-1 standards.
+Additional libraries and files may be added within the module directory as necessary and autoloaded using either
+the underscore separated path name convention for autoloading or composer autoloading.
 
 ### Plugin Class
 
@@ -383,7 +404,21 @@ $inventory = $this->call('inventory.list', 'SKU-A');
 
 ## HTTP Client
 
-* TODO*
+Use the `getHttpClient` method to obtain an instance of `\GuzzleHttp\Client`. This allows the production environment
+to perform proper logging and monitoring to ensure optimum functionality.
+
+```php
+$client = $this->getHttpClient([
+    'base_uri' => 'http://requestbin.net/r/chs4u8vm',
+    'auth' => ['username', 'password'],
+]);
+$response = $client->get(['query' => ['foo' => 'bar']]);
+$response->getStatusCode(); // 200
+```
+
+The request and response will be logged to `logs/http_client.log` unless 
+
+See the [Guzzle Documentation](https://docs.guzzlephp.org/en/stable/quickstart.html) for more information.
 
 ## State Management
 
@@ -735,3 +770,7 @@ indicate a failure which should be reported to the user and that can be retried 
 ## OAuth
 
 *TODO*
+
+## Composer Dependencies
+
+Composer is currently not supported but we're considering it so let us know if you have a need for it.
