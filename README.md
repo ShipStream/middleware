@@ -123,6 +123,8 @@ Installation
    Agent 007's IP is x.x.x.x, last updated at 2020-01-19T14:41:23+00:00.
    ```
 
+The source code for the `ShipStream_Test` plugin will be located at `.modman/plugin-test`.
+
 ### Advanced
 
 You can use a `.env` file in the root of the project to set some configuration options:
