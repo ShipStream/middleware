@@ -1,7 +1,7 @@
-ShipStream Merchant API Middleware
-========
+ShipStream Merchant Plugin Middleware
+=====================================
 
-The ShipStream Merchant API Middleware is an abstracted and lightweight version of ShipStream's production
+The ShipStream Merchant Plugin Middleware is an abstracted and lightweight version of ShipStream's production
 environment. With it, you can develop and test plugins destined to become integrated ShipStream WMS plugins,
 or use it as a standalone "middle-man" app between your systems and ShipStream.
 
@@ -33,8 +33,8 @@ or use it as a standalone "middle-man" app between your systems and ShipStream.
 
 Features
 --------
-ShipStream plugins support the following features which work exactly the same in both the middleware environment (this repository)
-and the production environment (ShipStream WMS).
+ShipStream Merchant Plugins support the following features which work exactly the same in both the middleware
+environment (this repository) and the production environment (ShipStream WMS).
 
 * Interact with ShipStream's [Merchant API](https://docs.shipstream.io) either as an embedded plugin or over https
 * Simple configuration
