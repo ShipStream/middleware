@@ -290,8 +290,6 @@ for OAuth authentication to be attempted. See [OAuth](#oauth) for more info.
             </license>
             <homepage>https://github.com/shipstream/plugin-test</homepage>
             <description><![CDATA[
-                <img src="{asset_base_url}images/logo.png"/>
-                <br/>
                 This is a <em>barebones</em> example to demonstrate what a plugin looks like.
             ]]></description>
             <oauth>
@@ -307,7 +305,7 @@ for OAuth authentication to be attempted. See [OAuth](#oauth) for more info.
 The plugin info can be accessed in the PHP plugin code using the `getPluginInfo` method:
 
 ```php
-$name = $this->getPluginInfo('name');
+$name = $this->getPluginInfo('info/name');
 // $name = 'Test Plugin'
 ```
 
