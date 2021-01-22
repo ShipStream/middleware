@@ -118,6 +118,26 @@ interface Plugin_Interface
     function getPluginInfo($path);
 
     /**
+     * @return \DateTimeZone
+     */
+    function getTimeZone();
+
+    /**
+     * @param int $id
+     * @return string|null
+     */
+    function getWarehouseName($id);
+
+    /**
+     * Get an instance of GuzzleClient - reuse this instance as much as possible and request a new instance for
+     * each unique base_uri.
+     *
+     * @param array $options
+     * @return \GuzzleHttp\Client
+     */
+    function getHttpClient(array $options);
+
+    /**
      * Log messages
      *
      * @param string  $message

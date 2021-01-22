@@ -418,7 +418,7 @@ $response = $client->get(['query' => ['foo' => 'bar']]);
 $response->getStatusCode(); // 200
 ```
 
-The request and response will be logged to `logs/http_client.log` unless 
+The request and response will be logged to `logs/http_client.log` if [debug mode](#debug-mode) is enabled.
 
 See the [Guzzle Documentation](https://docs.guzzlephp.org/en/stable/quickstart.html) for more information.
 
