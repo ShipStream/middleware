@@ -109,6 +109,7 @@ Installation
            <base_url>https://example.shipstream.app/api/jsonrpc</base_url>
            <login>{api_username}</login>
            <password>{api_password}</password>
+           <secret_key>{secret_key}</secret_key>
          </api>
        </middleware>
      </default>
