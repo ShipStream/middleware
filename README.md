@@ -103,6 +103,7 @@ Installation
          <system>
            <base_url>http://localhost/</base_url>
            <log>stdout</log>
+           <timezone>America/New_York</timezone>
          </system>
          <api>
            <base_url>https://example.shipstream.app/api/jsonrpc</base_url>

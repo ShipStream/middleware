@@ -2,26 +2,27 @@
 <config>
     <default>
         <middleware>
+            <!-- System Configuration -->
             <system>
-                <base_url>http://example.com/</base_url> <!-- public url to 'pub' directory -->
-                <log>system.log</log> <!-- stdout, syslog or file name -->
-                <timezone>America/New_York</timezone>
+                <base_url>http://localhost/</base_url> <!-- public url to 'pub' directory -->
+                <log>stdout</log>                      <!-- stdout, syslog or file name (e.g. system.log) -->
+                <timezone>America/New_York</timezone>  <!-- the merchant's configured default timezone -->
             </system>
 
             <!-- JSONRPC Client Configuration -->
             <api>
-                <base_url></base_url>
-                <login></login>
-                <password></password>
-                <secret_key></secret_key>
+                <base_url></base_url>                  <!-- base url of ShipStream instance -->
+                <login></login>                        <!-- API key username -->
+                <password></password>                  <!-- API key password -->
+                <secret_key></secret_key>              <!-- secret key to validate webhooks and callbacks -->
             </api>
 
             <!-- Pub-Sub Server Configuration -->
             <pubsub>
-                <active>0</active><!-- indicates whether Redis is used -->
-                <server>127.0.0.1:6379</server><!-- host or host with port -->
+                <active>0</active>                     <!-- indicates whether Redis is used -->
+                <server>127.0.0.1:6379</server>        <!-- host or host with port -->
                 <command>a09fce0acf1415cf0584a058669df60a</command><!-- alias for the PSUBSCRIBE command -->
-                <timeout>-1</timeout><!-- optional. 0 (or -1) for no timeout, otherwise number of seconds -->
+                <timeout>-1</timeout>                  <!-- optional. 0 (or -1) for no timeout, otherwise number of seconds -->
             </pubsub>
         </middleware>
 
