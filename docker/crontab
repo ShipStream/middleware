@@ -1,0 +1,9 @@
+# /etc/crontab: system-wide crontab
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+*/5 * * * * php /var/www/html/run.php $PLUGIN --crontab every_five_minutes 2>&1 >>/var/www/html/logs/cron.log
+*/10 * * * * php /var/www/html/run.php $PLUGIN --crontab every_ten_minutes 2>&1 >>/var/www/html/logs/cron.log
+0 * * * * php /var/www/html/run.php $PLUGIN --crontab every_one_hour 2>&1 >>/var/www/html/logs/cron.log
+0 0 * * * php /var/www/html/run.php $PLUGIN --crontab every_day_midnight 2>&1 >>/var/www/html/logs/cron.log
+30 6 * * * php /var/www/html/run.php $PLUGIN --crontab every_day_morning 2>&1 >>/var/www/html/logs/cron.log
+3 19 * * * php /var/www/html/run.php $PLUGIN --crontab every_day_evening 2>&1 >>/var/www/html/logs/cron.log

@@ -2,6 +2,7 @@ version: "3.7"
 
 services:
   php-fpm:
+    image: docker.pkg.github.com/shipstream/middleware/php:latest
     build: ./docker
     environment:
       - DEBUG=${DEBUG:-0}
@@ -19,6 +20,7 @@ services:
       - .:/var/www/html
 
   cli:
+    image: docker.pkg.github.com/shipstream/middleware/php:latest
     build: ./docker
     working_dir: /var/www/html
     user: www-data
@@ -26,3 +28,17 @@ services:
       - DEBUG=${DEBUG:-0}
     volumes:
       - .:/var/www/html
+    command:
+      /bin/true
+
+  cron:
+    image: docker.pkg.github.com/shipstream/middleware/php:latest
+    build: ./docker
+    working_dir: /var/www/html
+    user: root
+    environment:
+      - DEBUG=${DEBUG:-0}
+    volumes:
+      - .:/var/www/html
+    command:
+      /bin/true

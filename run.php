@@ -61,6 +61,10 @@ try {
                 echo "$method->name\n    {$method->getDocComment()}\n";
             }
         }
+    } else if ($method === '--crontab') {
+        echo "Running crontab for {$argv[3]}...\n";
+        echo "NOT YET IMPLEMENTED!! Please run your cron tasks using the method name directly.\n";
+        // TODO
     } else {
         $middleware->run($method);
     }

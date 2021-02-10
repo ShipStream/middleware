@@ -2,6 +2,12 @@ FROM php:7.4-fpm
 
 COPY php.ini /usr/local/etc/php/conf.d/zz-shipstream.ini
 
+# Add crontab file for cron mode
+RUN set -x && apt-get update && apt-get -y install --no-install-recommends -q cron && rm /etc/crontab
+COPY cron.sh /cron.sh
+COPY crontab /etc/middleware-crontab
+RUN crontab -u www-data /etc/middleware-crontab
+
 # Allow XDebug to be added at build time
 ARG XDEBUG
 RUN if test -n "$XDEBUG"; then \
