@@ -1,5 +1,24 @@
 {
+  "name": "shipstream/middleware",
+  "description": "Lightweight dev environment for ShipStream Merchant Plugins",
+  "type": "project",
   "require": {
-    "guzzlehttp/guzzle": "^7.0"
+    "php": "~7.4.0",
+    "guzzlehttp/guzzle": "^7.0",
+    "ext-bcmath": "*",
+    "ext-dom": "*",
+    "ext-gd": "*",
+    "ext-gmp": "*",
+    "ext-iconv": "*",
+    "ext-intl": "*",
+    "ext-json": "*",
+    "ext-libxml": "*",
+    "ext-lzf": "*",
+    "ext-mbstring": "*",
+    "ext-simplexml": "*",
+    "ext-soap": "*",
+    "ext-sodium": "*",
+    "ext-yaml":"*",
+    "ext-zip": "*"
   }
 }

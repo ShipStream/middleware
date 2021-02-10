@@ -1,7 +1,7 @@
 ShipStream Merchant Plugin Middleware
 =====================================
 
-The ShipStream Merchant Plugin Middleware is an abstracted and lightweight version of ShipStream's production
+The ShipStream Merchant Plugin Middleware is a lightweight, abstracted version of ShipStream's production
 environment. With it, you can develop and test plugins destined to become integrated ShipStream WMS plugins,
 or use it as a standalone "middle-man" app between your systems and ShipStream.
 
@@ -37,7 +37,7 @@ ShipStream Merchant Plugins support the following features which work exactly th
 environment (this repository) and the production environment (ShipStream WMS).
 
 * Interact with ShipStream's [Merchant API](https://docs.shipstream.io) either as an embedded plugin or over https
-* Simple configuration
+* Easily add configuration fields to the GUI
 * Run actions on demand
 * Run actions periodically via cron jobs
 * Respond to ShipStream events in real time (via Webhooks if using the middleware environment)
@@ -45,7 +45,7 @@ environment (this repository) and the production environment (ShipStream WMS).
 * Queue tasks to be executed in the background with error reporting and user-directed retries
 * Use state management and caching for ease of use and efficiency
 * Global locking to solve tricky race conditions
-* Perform OAuth authentication via command line or browser
+* Perform OAuth authentication via command line or web browser
 
 A plugin that is installed on the production environment can be configured by the user via the Merchant Panel as a
 "Subscription" or run in the middleware environment with a very simple installation using Docker Compose.

@@ -1,3 +1,9 @@
 #!/bin/bash
-
-docker run --rm -it -v "$PWD:/app" -u "$(id -u):$(id -g)" composer install
+CMD=install
+if [[ -n $1 ]]; then CMD=$1; fi
+docker run --rm -it -v "$PWD:/app" -u "$(id -u):$(id -g)" composer $CMD \
+  --no-dev \
+  --prefer-dist \
+  --optimize-autoloader \
+  --no-interaction \
+  --ignore-platform-reqs
