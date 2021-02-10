@@ -1,0 +1,17 @@
+# This file has not been tested yet
+# Consider eplacing with https://github.com/ttskch/docker-nginx-php-fpm-heroku
+setup:
+  config:
+    SOME_VAR: my-value
+build:
+  docker:
+    web:
+      dockerfile: docker/Dockerfile-heroku
+      target: web
+    worker:
+      dockerfile: docker/Dockerfile
+      target: heroku
+run:
+  web: php-fpm
+  worker: cron -f
+    image: web

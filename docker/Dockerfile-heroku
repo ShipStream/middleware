@@ -1,0 +1,16 @@
+FROM composer AS composer
+
+COPY composer.* /app
+
+# run composer install to install the dependencies
+RUN composer install \
+  --no-dev \
+  --prefer-dist \
+  --optimize-autoloader \
+  --no-interaction \
+  --ignore-platform-reqs
+
+
+FROM trafex/alpine-nginx-php7 as web
+
+COPY --chown=nginx --from=composer /app /var/www/html

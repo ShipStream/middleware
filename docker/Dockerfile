@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:7.4-fpm as php
 
 COPY php.ini /usr/local/etc/php/conf.d/zz-shipstream.ini
 
@@ -15,3 +15,20 @@ RUN if test -n "$XDEBUG"; then \
     ;fi
 ENV XDEBUG_CONFIG="idekey=PHPSTORM client_port=9000 client_host=host.docker.internal"
 ENV XDEBUG_MODE=develop,debug
+
+
+FROM composer AS composer
+
+COPY composer.* /app/
+
+RUN composer install \
+  --prefer-dist \
+  --optimize-autoloader \
+  --no-interaction \
+  --no-progress \
+  --ignore-platform-reqs
+
+
+FROM php as heroku
+
+COPY --chown=www-data --from=composer /app /var/www/html

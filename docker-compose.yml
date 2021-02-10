@@ -3,7 +3,9 @@ version: "3.7"
 services:
   php-fpm:
     image: docker.pkg.github.com/shipstream/middleware/php:latest
-    build: ./docker
+    build:
+      context: ./docker
+      target: php
     environment:
       - DEBUG=${DEBUG:-0}
     volumes:
@@ -21,7 +23,6 @@ services:
 
   cli:
     image: docker.pkg.github.com/shipstream/middleware/php:latest
-    build: ./docker
     working_dir: /var/www/html
     user: www-data
     environment:
@@ -33,7 +34,6 @@ services:
 
   cron:
     image: docker.pkg.github.com/shipstream/middleware/php:latest
-    build: ./docker
     working_dir: /var/www/html
     user: root
     environment:
