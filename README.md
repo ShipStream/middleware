@@ -469,6 +469,14 @@ plugin.xml:
 </plugin>
 ```
 
+### Hiding actions
+
+By specifying a plugin method name in either an `<if>` or `<unless>` node for the action the presence of the
+button in the user interface can be disabled to hide actions that are not applicable. For example, you
+could hide a "Upgrade Plugin" button if the upgrade has already been performed by adding a node
+`<unless>hasUpgradeBeenPerformed</unless>` and implementing a method with the same name which returns true
+if the upgrade has already been performed.
+
 ## Cron Tasks
 
 If just hacking on a plugin, you do not need to schedule a crontab task; you can just run the cron task methods
