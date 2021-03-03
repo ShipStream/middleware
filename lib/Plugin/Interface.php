@@ -97,7 +97,7 @@ interface Plugin_Interface
 
     /**
      * @param array|string $keys
-     * @return array|string
+     * @return array|string|null
      */
     function getState($keys);
 

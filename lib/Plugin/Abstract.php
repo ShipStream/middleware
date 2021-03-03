@@ -185,7 +185,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
 
     /**
      * @param array|string $keys
-     * @return array|string
+     * @return array|string|null
      * @throws Exception
      */
     final public function getState($keys)
