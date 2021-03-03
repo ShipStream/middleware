@@ -65,14 +65,17 @@ multiple brands names and have a separate shopping cart for each brand name.
 Requirements
 ------------
 
-* The supported platform for developing ShipStream plugins is PHP 7.4 on Docker (container build files provided).
-* A publicly accessible URL is required if your plugin receives third-party webhooks or responds to events from
-  ShipStream via ShipStream's webhooks.
+A fully operational development environment is provided by [Docker](https://docs.docker.com/get-docker/) and
+[Docker Compose](https://docs.docker.com/compose/install/).
+
+A publicly accessible URL is required if your plugin receives third-party webhooks or responds to events from
+ShipStream via ShipStream's webhooks. For development environments this can be obtained easily and for free with
+[localhost.run](https://localhost.run). 
 
 ### Windows
 
-Developing on Windows requires [WSL2 (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
-and [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/).
+Developing on Windows requires bash and therefore [WSL2 (Windows Subsystem for Linux)](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+and [Docker Desktop for Windows](https://docs.docker.com/docker-for-windows/install/) are recommended.
 
 ### Mac
 
@@ -133,6 +136,44 @@ You can use a `.env` file in the root of the project to set some configuration o
 
 - `DEBUG` Enable for HTTP request logging and other debug features (default is disabled).
 - `HOST_PORT` Choose a different port to expose (default is 80).
+
+### HTTPS Tunnel
+
+If you need to support callbacks and webhooks from systems not in your local development environment you need your
+url to be publicly accessible. One easy and free way to accomplish this is to use [localhost.run](https://localhost.run)
+which is a simple tunneling service that only requires the common `ssh` command.
+
+```
+$ ssh -R 80:localhost:80 localhost.run
+```
+
+If you changed the `HOST_PORT` in
+your `.env` file you will need to specify the correct port in the ssh command:
+
+```
+$ source .env
+$ ssh -R 80:localhost:${HOST_PORT} localhost.run
+```
+
+Upon a successful connection, you will be given a unique domain name like `user-938444e1.localhost.run`. On the free plan this will
+only last a few hours before it needs to be refreshed with a new domain name. Use this url in the `app/etc/local.xml`
+config file for the `default/system/middleware/base_url`:
+
+```xml
+<?xml version="1.0"?>
+<config>
+    <default>
+        <middleware>
+            <system>
+                <base_url>https://user-938444e1.localhost.run/</base_url>
+                ...
+            </system>
+            ...
+        </middleware>
+    </default>
+</config>
+```
+
 
 Developer Guide
 ===============
