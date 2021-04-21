@@ -16,7 +16,7 @@ error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', 1);
 require __DIR__.'/app/bootstrap.php';
 
-$debug = (bool)($_ENV['DEBUG'] ?? FALSE);
+$debug = (bool) getenv('DEBUG');
 if ( ! $debug && $argc == 4 && $argv[3] == '--debug') {
     $debug = TRUE;
     array_pop($argv);
