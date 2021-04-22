@@ -134,8 +134,8 @@ abstract class Plugin_Abstract implements Plugin_Interface
     public function oauthValidateConfig() {}
 
     /**
-     * @return mixed
-     * @throws Exception
+     * @return string[]
+     * @throws Plugin_Exception
      */
     public function oauthTest() {}
 

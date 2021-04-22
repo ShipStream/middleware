@@ -847,6 +847,22 @@ indicate a failure which should be reported to the user and that can be retried 
 
 *TODO*
 
+## Diagnostics
+
+A good plugin helps the user know when things are working and also when they are not. Implement the class methods
+`hasConnectionConfig` and `connectionDiagnostics` to provide useful information to the end user about the configuration
+(don't expose any sensitive credentials) and the connection status and any other important plugin information.
+
+For example, make at least one API call to confirm the authentication actually works and show some information to prove
+it like a store name. You can also show important state data such as the timestamp of the last successful order sync. 
+
+Use the following command to display the diagnostics information, this will be almost exactly what the users of the
+web app will see:
+
+```
+$ bin/mwrun ShipStream_Test --diagnostics
+```
+
 ## Composer Dependencies
 
 Composer is currently not supported but we're considering it so let us know if you have a need for it.

@@ -73,6 +73,17 @@ interface Plugin_Interface
      */
     function oauthTest();
 
+    /**
+     * @return bool
+     */
+    function hasConnectionConfig();
+
+    /**
+     * @return string[]
+     * throws Plugin_Exception
+     */
+    function connectionDiagnostics();
+
     /*
      * Available helper methods which CANNOT be overridden by plugins
      */

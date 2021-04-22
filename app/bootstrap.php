@@ -71,6 +71,23 @@ final class Middleware
     }
 
     /**
+     * @return bool
+     */
+    public function hasConnection()
+    {
+        return $this->_pluginInstance->hasConnectionConfig();
+    }
+
+    /**
+     * @return string[]
+     * @throw Plugin_Exception
+     */
+    public function diagnostics()
+    {
+        return $this->_pluginInstance->connectionDiagnostics();
+    }
+
+    /**
      * Subscribe for the Pub/Sub server events
      *
      * @return void
