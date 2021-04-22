@@ -370,6 +370,25 @@ final class Middleware
 
     /**
      * @param string $key
+     * @return int|null
+     */
+    public function cacheTimestamp($key)
+    {
+        $path = BP . DS . 'tmp' . DS . 'cache-'.$key;
+        if ( ! file_exists($path)) {
+            return NULL;
+        }
+        $data = unserialize(file_get_contents($path));
+        if ( ! $data['expires'] || time() < $data['expires']) {
+            return $data['created'];
+        } else {
+            unlink($path);
+            return NULL;
+        }
+    }
+
+    /**
+     * @param string $key
      * @param string|array $data
      * @param int|null $lifetime
      * @throws Exception
@@ -381,11 +400,12 @@ final class Middleware
         if ($lifetime === FALSE) {
             $lifetime = 7200;
         }
-        $expires = $lifetime ? time() + $lifetime : NULL;
+        $now = time();
+        $expires = $lifetime ? $now + $lifetime : NULL;
         if ( ! is_writable(dirname($path))) {
             throw new Exception('Cannot write to tmp directory.');
         }
-        return !! file_put_contents($path, serialize(array('data' => $data, 'expires' => $expires)));
+        return !! file_put_contents($path, serialize(array('data' => $data, 'created' => $now, 'expires' => $expires)));
     }
 
     /**

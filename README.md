@@ -883,7 +883,41 @@ try {
 
 ## Caching
 
-*TODO*
+In situations where you have to get some expensive data for a process you can cache it so it can be used
+between invocations of the plugin. This data should not be considered safe in that it can be invalidated
+before the expiration, or it might not even be cached at all so do not try to use it as shared-memory!
+
+Do not cache data that you cannot reasonably know that it will not become stale. For example, inventory
+data is ever-changing and so should not be cached but if you have a good mechanism to invalidate product
+data (such as a "product was updated" webhook or a fast query to get the most recently updated timestamp)
+then caching product data may be perfectly valid. Another example would be some metadata that changes
+very infrequently and the impact of using stale data is negligible.
+
+```php
+/* @var $this Plugin_Abstract */
+
+// Get and cache some expensive data
+if (($data = $this->loadCache('some_data')) === NULL) {
+    $data = $this->getExpensiveData();
+    $this->saveCache('some_data', $data, 3600);
+}
+$this->doSomething($data);
+
+
+// Get and cache some expensive data with freshness check
+// Caution: This is subject to race conditions and clock skew!! 
+if ($cachedTime = $this->cacheTimestamp('some_data')) {
+    $latestData = $this->getExpensiveDataUpdatedTimestamp();
+    if ($latestData > $cachedTime || ($data = $this->loadCache('some_data')) === NULL) {
+        $data = $this->getExpensiveData();
+        $this->saveCache('some_data', $data, 3600);
+    }
+}
+$this->doSomething($data);
+
+// Invalidate the expensive data when it is expected to be stale
+$this->removeCache('some_data');
+```
 
 ## OAuth
 

@@ -460,6 +460,15 @@ abstract class Plugin_Abstract implements Plugin_Interface
 
     /**
      * @param string $key
+     * @return int|null
+     */
+    final public function cacheTimestamp($key)
+    {
+        return $this->middleware->cacheTimestamp($key);
+    }
+
+    /**
+     * @param string $key
      * @param string $data
      * @param bool|int $lifeTime
      * @throws Exception
