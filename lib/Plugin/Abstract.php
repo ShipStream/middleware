@@ -437,7 +437,16 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function getLock($key)
     {
-        // TODO
+        static $locks = [];
+        if (strlen($key) > 100 || preg_match('/[^a-zA-Z0-9_-]/', $key)) {
+            $key = md5($key);
+        }
+        if ( ! isset($locks[$key])) {
+            $lock = new Plugin_Lock("{$this->code}-$key");
+            $lock->_setLockFilePathPrefix($this->middleware->getLockFilePath(''));
+            $locks[$key] = $lock;
+        }
+        return $locks[$key];
     }
 
     /**

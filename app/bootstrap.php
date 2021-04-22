@@ -399,6 +399,15 @@ final class Middleware
     }
 
     /**
+     * @param string $file
+     * @return string
+     */
+    public function getLockFilePath($file)
+    {
+        return BP . DS . 'tmp' . DS . 'lock---' . $file;
+    }
+
+    /**
      * Render page HTML
      *
      * @param string $template

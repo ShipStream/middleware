@@ -833,11 +833,53 @@ indicate a failure which should be reported to the user and that can be retried 
 
 ## Global Locking
 
-*TODO*
+***Use this sparingly!!***
+
+If you absolutely must use global locking to put certain actions in lock step with one another you can use the lock
+object to do so but make sure the usage is justified and the locking time is minimized as much as possible.
+
+```php
+// Process 1
+$lock = $this->getLock('my_lock_namespace');
+$lock->lock();
+if ( ! $lock->isLocked()) {
+    $this->log('Process locked, will try again later.');
+    return;
+}
+try {
+    $this->doSomething();
+} finally {
+    $lock->unlock();
+}
+
+// Process 2
+$lock = $this->getLock('my_lock_namespace');
+$lock->lockAndBlock();
+try {
+    $this->doSomethingElse();
+} finally {
+    $lock->unlock();
+}
+```
 
 ## Logging
 
-*TODO*
+Log information that may be valuable for debugging, both successes and failures. Don't go overboard but disk space is
+cheap compared to your time and conditions from a production environment are sometimes very difficult to recreate so
+log plenty of information without logging useless stuff.
+
+Note, when using the recommended HTTP client the requests and responses are already logged so you do not need to add
+your own logging for these, just make sure debug mode is enabled.
+
+```php
+$this->isDebug() and $this->log('Hello log.');
+try {
+    // do something
+} catch (Exception $e) {
+    $this->logException($e);
+    throw new Plugin_Exception('An unexpected error occurred while doing something.', 0, $e);
+}
+```
 
 ## Caching
 
