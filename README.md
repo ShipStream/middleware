@@ -28,6 +28,7 @@ or use it as a standalone "middle-man" app between your systems and ShipStream.
   - [Logging](#logging)
   - [Caching](#caching)
   - [OAuth](#oauth)
+  - [Diagnostics](#diagnostics)
   - [Composer Dependencies](#composer-dependencies)
 - [Merchant API Documentation](https://docs.shipstream.io) (external link)
 
@@ -433,7 +434,7 @@ plugin.xml:
 
 You may call ShipStream API methods from the plugin using the `call` method so there is no need to deal with
 an HTTP client or authentication. In production this will call methods directly and in the middleware environment
-there will be a synchronous HTTP request for every invocation but the return values will be the same.
+there will be a synchronous HTTP request for every invocation, but the return values will be the same.
 
 See the **[API Documentation](https://docs.shipstream.io)** for information on specific API methods and their
 arguments and responses.
@@ -441,6 +442,7 @@ arguments and responses.
 Example:
 
 ```php
+/* @var $this Plugin_Abstract */
 $inventory = $this->call('inventory.list', 'SKU-A');
 // [['sku' => 'SKU-A', 'qty_advertised' => '0.0000', ...]]
 ```
@@ -448,14 +450,17 @@ $inventory = $this->call('inventory.list', 'SKU-A');
 ## HTTP Client
 
 Use the `getHttpClient` method to obtain an instance of `\GuzzleHttp\Client`. This allows the production environment
-to perform proper logging and monitoring to ensure optimum functionality.
+to perform proper logging and monitoring to ensure optimum functionality. The Guzzle client is very versatile, so it
+is recommended to wrap it as needed or use it as-is, but avoid using other http clients as they may not be supported.
 
 ```php
+/* @var $this Plugin_Abstract */
+/* @var $client \GuzzleHttp\Client */
 $client = $this->getHttpClient([
     'base_uri' => 'http://requestbin.net/r/chs4u8vm',
     'auth' => ['username', 'password'],
 ]);
-$response = $client->get(['query' => ['foo' => 'bar']]);
+$response = $client->get('/test', ['query' => ['foo' => 'bar']]);
 $response->getStatusCode(); // 200
 ```
 
@@ -466,9 +471,11 @@ See the [Guzzle Documentation](https://docs.guzzlephp.org/en/stable/quickstart.h
 ## State Management
 
 ShipStream provides a general-purpose storage mechanism to hold state data like the last time a sync was completed.
-Do *not* use this to store a large number of values or values that will be "leaked" over time such as a status for
+Do *not* use this to store an unbounded number of values or values that will be "leaked" over time such as a status for
 every order. For example, if your plugin registers a webhook with a third-party you could store the id of the webhook
-so that it can be easily updated or deleted later. 
+so that it can be easily updated or deleted later.
+
+This state data is properly namespaced so it cannot conflict with or be ready by other plugin subscriptions.
 
 ```php
 $this->setState('test', array(
@@ -483,8 +490,8 @@ $this->log("{$data['my_name']} last updated at ".date('c', $data['last_updated']
 ## Manual Actions
 
 Any public plugin method can be run by executing the following command in the command line specifying the plugin
-namespace and method name. You can also allow the user to trigger methods manually by defining an "action" node in
-the `plugin.xml` file. 
+namespace and method name. You can also allow the user on production to trigger methods manually by defining an "action"
+node in the `plugin.xml` file which will render a button on the Subscription page. 
 
 For example, running the following console command is equivalent to the user clicking "Update IP" in the user interface,
 both will run the `update_ip` method defined in the PHP class with the proper environment context.
@@ -548,9 +555,9 @@ For example, the task defined in this `plugin.xml` file will run the method
 </plugin>
 ```
 
-An important consideration when using cron tasks is to ensure that the time between tasks is greater than the time
-required to complete the task. Use events to make your integration nearly real-time where possible and use polling
-as a fallback.
+An important consideration when using cron tasks is to ensure that the time between tasks is significantly greater than
+the time required to complete the task once in a worst-case scenario. Use webhooks and events to make your integration
+nearly real-time where possible and use polling and batch jobs only as a fallback if possible.
 
 If you need a cron schedule that is not provided please request it with an explanation for your use-case.
 
@@ -705,7 +712,9 @@ class ShipStream_Test_Plugin extends Plugin_Abstract
 ```
 
 It is important to note that many webhook systems have retries and expect to receive a success response within a short
-amount of time so it is advised to use the job queue to perform any potentially long-running work in the background.
+amount of time, so it is advised to use the [job queue](#job-queue) to perform any potentially long-running work in
+the background. The middleware environment doesn't have a real job queue mechanism, so the jobs will be executed in the
+foreground.
 
 ## Third-party Remote Callbacks
 
@@ -775,10 +784,16 @@ $ bin/mwrun ShipStream_Test --callback-url testCallback
 
 ## Error Handling and Reporting
 
-On the production environment errors may be reported to the user allowing the user to view the error information
-in the user interface. If an error is automatically resolved due to an issue being fixed externally or an automatic
-retry, your plugin should mark it as resolved. Errors are identified using a hash of the raw data passed when the
-error is recorded so to mark an error resolved you must pass the same raw data that was originally passed when the
+The only exception class that should be thrown from a plugin is `Plugin_Exception`, all other exceptions should be
+caught and handled internally and re-thrown with `Plugin_Exception` passing the original exception as the third
+parameter (`$previousException`). These exceptions may be visible to the end users so they should not contain sensitive
+data, and they should be clear and descriptive to help end users understand what the problem is.
+
+On the production environment, errors may be reported to the user through the ShipStream Admin UI and Client UI allowing
+the user to view the error information in a grid using the `reportError` method. If an error is automatically resolved
+due to an issue being fixed externally or by an automatic retry, your plugin should mark it as resolved using the
+`resolveError` method. Errors are identified using a hash of the raw data passed when the error is recorded so they
+cannot be duplicated. To mark an error resolved you **must** pass the same raw data that was originally passed when the
 error was reported.
 
 ```php
@@ -797,10 +812,10 @@ error to `logs/errors.log`.
 ## Job Queue
 
 For any actions that may take a significant amount of time or need to be retried later you should not run them
-directly but rather run them using the job queue. For example if an action discovers 100 new orders to be created,
+directly but rather run them using the job queue. For example, if an action discovers 100 new orders to be created,
 do not create them all serially in the foreground but rather create a separate job for each order so that the
 errors can be reported and handled for each order individually. Jobs added to the queue which resulted in an error
-can be retried by the user via the user interface.
+can be viewed and retried by the user via the user interface.
 
 ```php
 $this->addEvent('importOrderEvent', [
@@ -872,7 +887,9 @@ Note, when using the recommended HTTP client the requests and responses are alre
 your own logging for these, just make sure debug mode is enabled.
 
 ```php
-$this->isDebug() and $this->log('Hello log.');
+/* @var $this Plugin_Abstract */
+$this->isDebug() and $this->log('Hello log.', self::DEBUG, 'hello.log');
+$this->log('Something terrible happened!', self::ERR);
 try {
     // do something
 } catch (Exception $e) {
