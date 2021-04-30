@@ -775,7 +775,7 @@ class ShipStream_Test_Plugin extends Plugin_Abstract
 }
 ```
 
-The callback url should be automatically regsitered with the third-party but you can get the url generated for testing
+The callback url should be automatically registered with the third-party, but you can get the url generated for testing
 with the following command:
 
 ```
@@ -797,17 +797,21 @@ cannot be duplicated. To mark an error resolved you **must** pass the same raw d
 error was reported.
 
 ```php
-$rawData = $orderData;
+$rawData = json_encode($data);
 try {
-    $this->call('order.create', $params);
+    $this->doSomething($data);
     $this->resolveError($rawData);
 } catch (Plugin_Exception $e) {
-    $this->reportError($e, $rawData, TRUE, 'Create Order');
+    $this->reportError($e, $rawData, TRUE, 'Do Something');
 }
 ```
 
 On the middleware environment the `reportError` and `resolveError` methods will have no effect other than to log the
 error to `logs/errors.log`.
+
+Any methods that use the Job Queue (described below) will automatically report errors and resolve errors based on if
+the event callback throws an error (error is reported) or not (error is resolved). So for job queue callbacks just
+throw or re-throw a `Plugin_Exception` rather than reporting and resolving errors directly. 
 
 ## Job Queue
 
