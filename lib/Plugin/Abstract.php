@@ -92,10 +92,17 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
+     * Get the url which starts the OAuth connection
+     *
+     * @param null|string $redirectUrl
+     * @return string
+     */
+    public function oauthGetConnectUrl($redirectUrl = NULL) {}
+
+    /**
      * Get the button to setup the OAuth connection
      *
      * @param array $connectParams
-     * @param array $redirectParams
      * @return string
      */
     public function oauthGetConnectButton($connectParams = array()) {}

@@ -39,6 +39,12 @@ interface Plugin_Interface
     function oauthGetRedirectUrl($area = NULL);
 
     /**
+     * @param null|string $redirectUrl
+     * @return string
+     */
+    function oauthGetConnectUrl($redirectUrl = NULL);
+
+    /**
      * @param array $connectParams
      * @return string
      */
