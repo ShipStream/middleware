@@ -1,11 +1,14 @@
 <?php
 
+use Monolog\Formatter\LineFormatter;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\Client;
 use GuzzleHttp\Middleware;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Loguzz\Middleware\LogMiddleware;
 
 /**
  * Abstract class for a plugin
@@ -285,33 +288,32 @@ abstract class Plugin_Abstract implements Plugin_Interface
             $options['handler'] = $handlerStack;
         }
         $options['handler']->push(Middleware::httpErrors());
+
         $options['handler']->push(Middleware::mapRequest(function (RequestInterface $request) {
             return $request->withHeader('User-Agent', 'ShipStream-Middleware/1.0 (Plugin;'.$this->code.')');
         }));
 
-        $debugFileHandle = $this->_isDebug ? $this->middleware->getLogFileHandle('http_client.log') : FALSE;
-        if ($debugFileHandle) {
-            $options['handler']->push(Middleware::tap(
-                function (RequestInterface $request, $options) use ($debugFileHandle) {
-                    fwrite($debugFileHandle, "\n".$request->getBody()->getContents()."\n");
-                },
-                function (RequestInterface $request, $options, $response) use ($debugFileHandle) {
-                    $response->then(
-                        static function (ResponseInterface $response) use ($debugFileHandle) {
-                            fwrite($debugFileHandle, "\n".$response->getBody()->getContents()."\n");
-                            $response->getBody()->rewind();
-                            return $response;
-                        }
-                    );
-                }
-            ));
+        if ($this->_isDebug) {
+            $debugFileHandle = $this->middleware->getLogFileHandle('http_client.log');
+            $logger = new Logger('http-requests');
+            $logger->pushProcessor(function ($record) {
+                $record['extra']['request_id'] = Mage::registry('logger_request_id');
+                return $record;
+            });
+            $formatter = new LineFormatter("[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n", NULL, TRUE, TRUE);
+            $streamHandler = new StreamHandler($debugFileHandle);
+            $streamHandler->setFormatter($formatter);
+            $logger->pushHandler($streamHandler);
+            $loggerOptions = [
+                'response_formatter' => new Plugin_ResponseFormatter(),
+            ];
+            $options['handler']->push(new LogMiddleware($logger, $loggerOptions), 'logger');
         }
 
         $defaultOptions = [
             'allow_redirects' => FALSE,
             'connect_timeout' => 1.5,
             'timeout' => 30,
-            'debug' => $debugFileHandle,
         ];
         $options = array_merge($defaultOptions, $options);
 

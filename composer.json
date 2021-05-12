@@ -4,7 +4,7 @@
   "type": "project",
   "require": {
     "php": "~7.4.0",
-    "guzzlehttp/guzzle": "^7.0",
+    "guzzlehttp/guzzle": "^6.2.1",
     "ext-bcmath": "*",
     "ext-dom": "*",
     "ext-gd": "*",
@@ -19,6 +19,8 @@
     "ext-soap": "*",
     "ext-sodium": "*",
     "ext-yaml":"*",
-    "ext-zip": "*"
+    "ext-zip": "*",
+    "anik/loguzz": "^1.2",
+    "monolog/monolog": "^2.2"
   }
 }
