@@ -459,6 +459,36 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
+     * Apply filter scripts
+     *
+     * @param string $snippet - A snippet of Javascript code.
+     * @param array $arguments - A PHP hash with the keys being names of arguments and values being JSON-serializable values which will be converted to Javascript objects.
+     * @param string $returnArg - The named argument which should be returned
+     * @return array
+     * @throws Mage_Core_Exception
+     */
+    final public function applyScript($snippet, $arguments, $returnArg)
+    {
+        // Do nothing, only supported in production
+        return $arguments[$returnArg];
+    }
+
+    /**
+     * Apply filter scripts specifically for orders (adds product data to order object)
+     *
+     * @param string $snippet - A snippet of Javascript code.
+     * @param array $newOrderData
+     * @param array $arguments - A PHP hash with the keys being names of additional arguments and values being JSON-serializable values which will be converted to Javascript objects.
+     * @return array
+     * @throws Mage_Core_Exception
+     */
+    final public function applyScriptForOrder($snippet, $newOrderData, $arguments)
+    {
+        // Do nothing, only supported in production
+        return $newOrderData;
+    }
+
+    /**
      * @param string $key
      * @return array|null|string
      */
