@@ -108,15 +108,17 @@ interface Plugin_Interface
     /**
      * @param array|string $data
      * @param int|string|array|stdClass|null $value
+     * @param int|string|null $ifEquals - if specified, the value is only updated if the value was previously equal to $ifEquals value
      * @return mixed
      */
-    function setState($data, $value = NULL);
+    function setState($data, $value = NULL, $ifEquals = NULL);
 
     /**
      * @param array|string $keys
+     * @param bool $detailed
      * @return array|string|null
      */
-    function getState($keys);
+    function getState($keys, $detailed = FALSE);
 
     /**
      * Retrieve config value
