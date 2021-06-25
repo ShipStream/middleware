@@ -442,12 +442,11 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function addEvent($method, array $data, $delayTime = NULL)
     {
-        // Job queue simulation for plugin development.
         if (is_int($delayTime)) {
-            sleep($delayTime);
-        }
-
-        $this->$method(new Varien_Object($data));
+            $this->middleware->addEventQueue([$method, new Varien_Object($data), $delayTime]);
+        } else {
+           $this->$method(new Varien_Object($data));
+       }
     }
 
     /**
