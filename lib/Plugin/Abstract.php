@@ -167,20 +167,27 @@ abstract class Plugin_Abstract implements Plugin_Interface
      * @param string $method
      * @param array $args
      * @return mixed
-     * @throws Exception
+     * @throws Plugin_Exception
      */
     final public function call($method, $args = array())
     {
-        return $this->_getClient()->call($method, $args, TRUE);
+        try {
+            return $this->_getClient()->call($method, $args, TRUE);
+        } catch (Plugin_Exception $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            throw new Plugin_Exception('Unexpected error: '.$e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
      * @param array|string $data
      * @param int|string|array|stdClass|null $value
+     * @param int|string|null $ifEquals - if specified, the value is only updated if the value was previously equal to $ifEquals value
      * @return mixed
      * @throws Exception
      */
-    final public function setState($data, $value = NULL)
+    final public function setState($data, $value = NULL, $ifEquals = NULL)
     {
         if (is_string($data)) {
             $data = $this->code.'_'.$data;
@@ -190,30 +197,31 @@ abstract class Plugin_Abstract implements Plugin_Interface
                 unset($data[$k]);
             }
         }
-        return $this->call('state.set', array('data' => $data, 'value' => $value));
+        return $this->call('state.set', [$data, $value, $ifEquals]);
     }
 
     /**
      * @param array|string $keys
+     * @param bool $detailed
      * @return array|string|null
      * @throws Exception
      */
-    final public function getState($keys)
+    final public function getState($keys, $detailed = FALSE)
     {
         if (is_string($keys)) {
             $keys = $this->code.'_'.$keys;
         } elseif (is_array($keys)) {
             $keys = array_map(function($key){ return $this->code.'_'.$key; }, $keys);
         }
-        $data = $this->call('state.get', array($keys));
+        $data = $this->call('state.get', [$keys, $detailed]);
         if (is_array($data)) {
             foreach ($data as $k => $v) {
                 $_k = preg_replace("/^{$this->code}_/", '', $k);
-                $data[$_k] = $data[$k];
+                $data[$_k] = $v;
                 unset($data[$k]);
             }
         }
-        return $this->call('state.get', array($keys));
+        return $data;
     }
 
     /**
@@ -461,6 +469,36 @@ abstract class Plugin_Abstract implements Plugin_Interface
             $locks[$key] = $lock;
         }
         return $locks[$key];
+    }
+
+    /**
+     * Apply filter scripts
+     *
+     * @param string $snippet - A snippet of Javascript code.
+     * @param array $arguments - A PHP hash with the keys being names of arguments and values being JSON-serializable values which will be converted to Javascript objects.
+     * @param string $returnArg - The named argument which should be returned
+     * @return array
+     * @throws Mage_Core_Exception
+     */
+    final public function applyScript($snippet, $arguments, $returnArg)
+    {
+        // Do nothing, only supported in production
+        return $arguments[$returnArg];
+    }
+
+    /**
+     * Apply filter scripts specifically for orders (adds product data to order object)
+     *
+     * @param string $snippet - A snippet of Javascript code.
+     * @param array $newOrderData
+     * @param array $arguments - A PHP hash with the keys being names of additional arguments and values being JSON-serializable values which will be converted to Javascript objects.
+     * @return array
+     * @throws Mage_Core_Exception
+     */
+    final public function applyScriptForOrder($snippet, $newOrderData, $arguments)
+    {
+        // Do nothing, only supported in production
+        return $newOrderData;
     }
 
     /**

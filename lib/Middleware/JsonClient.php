@@ -89,7 +89,7 @@ class Middleware_JsonClient extends Zend_Http_Client
      * @param string $method
      * @param array  $args
      * @param bool   $canRetry
-     * @throws Exception
+     * @throws Plugin_Exception
      * @return mixed
      */
     public function call($method, $args = array(), $canRetry = TRUE)
@@ -125,7 +125,7 @@ class Middleware_JsonClient extends Zend_Http_Client
         if ($response->isSuccessful()) {
             $return = json_decode($response->getBody(), TRUE);
             if ($return === NULL) {
-                throw new Exception('Invalid response ('.$response->getStatus().'): '.$response->getBody());
+                throw new Plugin_Exception('Invalid response ('.$response->getStatus().'): '.$response->getBody());
             }
             if (isset($return['error'])) {
                 $code = ($return['error']['code'] * -1) - 32000;
@@ -139,11 +139,11 @@ class Middleware_JsonClient extends Zend_Http_Client
                     }
                 }
 
-                throw new Exception("($code) {$return['error']['message']}", $code);
+                throw new Plugin_Exception("($code) {$return['error']['message']}", $code);
             }
             return $return['result'];
         } else {
-            throw new Exception("Response:\n".$response->asString());
+            throw new Plugin_Exception("Response:\n".$response->asString());
         }
     }
 
