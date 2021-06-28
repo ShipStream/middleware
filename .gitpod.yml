@@ -1,0 +1,12 @@
+tasks:
+  - name: Setup and Update Dependencies
+    before: |
+      chmod go+rwX tmp logs \
+      && cp app/etc/local.sample.xml app/etc/local.xml \
+      && sed -i "s#http://localhost/#$(gp url 80)#" app/etc/local.xml
+    init: bin/update
+    command: echo "Clone a module and start coding!"
+
+ports:
+  - port: 80
+    onOpen: ignore
