@@ -387,20 +387,20 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
-     * Retrieve callback url
+     * Retrieve callback url, pass NULL to get a url containing a {{method}} placeholder.
      *
-     * @param string $method
+     * @param string|null $method
      * @return string
      * @throws Exception
      */
     final public function getCallbackUrl($method)
     {
-        if ( ! $this->getPluginInfo('routes/'.$method)) {
+        if ($method && ! $this->getPluginInfo('routes/'.$method)) {
             throw new Exception(sprintf('There is no route defined for %s in %s', $method, $this->code));
         }
         $params = [
             'plugin' => $this->code,
-            'method' => $method,
+            'method' => $method ?? '{{method}}',
             'secret_key' => $this->middleware->getConfig('middleware/api/secret_key'),
         ];
         return $this->_getBaseUrl().'callback.php?'.http_build_query($params, '', '&');
