@@ -442,7 +442,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function addEvent($method, array $data, $delayTime = NULL)
     {
-        // TODO
+        $this->middleware->addEventQueue([$method, new Varien_Object($data), $delayTime]);
     }
 
     /**

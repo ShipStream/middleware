@@ -30,6 +30,9 @@ final class Middleware
 
     private static $_instance;
 
+    /** @var array */
+    private $_eventQueue = [];
+
     public function __construct($plugin, $debug = FALSE)
     {
         // Ensure that user cannot instantiate Middleware
@@ -56,6 +59,18 @@ final class Middleware
     }
 
     /**
+     * An event array has 3 elements:
+     * [string method, Varien_Object param, int|null delay in seconds]
+     *
+     * @param array $event 
+     * @return void 
+     */
+    public function addEventQueue(array $event)
+    {
+        $this->_eventQueue[] = $event;
+    }
+
+    /**
      * Call the method of the plugin
      *
      * @param string $method
@@ -68,6 +83,12 @@ final class Middleware
             throw new Exception(sprintf('The plugin method "%s" is not callable.', $method));
         }
         $this->_pluginInstance->$method();
+
+        // Queue simulation.
+        foreach ($this->_eventQueue as $event) {
+            [$eventMethod, $param] = $event;
+            $this->_pluginInstance->$eventMethod($param);
+        }
     }
 
     /**
