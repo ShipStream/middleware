@@ -338,7 +338,10 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function log($message, $level = NULL, $file = NULL)
     {
-        $this->middleware->log($message, $file);
+        // Log if CLI, do not log if callback (php_sapi_name() === 'fpm-fcgi'), as it expects JSON encoded string.
+        if (php_sapi_name() === 'cli' && $this->getConfig('middleware/system/log') == 'stout') {
+            $this->middleware->log($message, $file);
+        }
     }
 
     /**
