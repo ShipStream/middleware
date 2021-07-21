@@ -336,9 +336,9 @@ final class Middleware
                 $destination = 'stdout';
             }
         }
-        if ($destination == 'stdout') {
+        if ($destination == 'stdout' && php_sapi_name() === 'cli') {
             echo $message."\n";
-        } else if ($destination && $destination != 'syslog') {
+        } else if ($destination && $destination != 'syslog' && $destination != 'stdout') {
             error_log(date('c').' '.$message."\n", 3, BP . DS . 'logs' . DS . $destination);
         } else {
             error_log($message);
