@@ -158,7 +158,7 @@ $ ssh -R 80:localhost:${HOST_PORT} localhost.run
 
 Upon a successful connection, you will be given a unique domain name like `user-938444e1.localhost.run`. On the free plan this will
 only last a few hours before it needs to be refreshed with a new domain name. Use this url in the `app/etc/local.xml`
-config file for the `default/system/middleware/base_url`:
+config file for the `default/middleware/system/base_url` value:
 
 ```xml
 <?xml version="1.0"?>
