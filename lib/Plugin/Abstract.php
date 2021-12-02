@@ -304,10 +304,6 @@ abstract class Plugin_Abstract implements Plugin_Interface
         if ($this->_isDebug) {
             $debugFileHandle = $this->middleware->getLogFileHandle('http_client.log');
             $logger = new Logger('http-requests');
-            $logger->pushProcessor(function ($record) {
-                $record['extra']['request_id'] = Mage::registry('logger_request_id');
-                return $record;
-            });
             $formatter = new LineFormatter("[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n", NULL, TRUE, TRUE);
             $streamHandler = new StreamHandler($debugFileHandle);
             $streamHandler->setFormatter($formatter);
