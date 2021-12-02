@@ -214,7 +214,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
             $keys = array_map(function($key){ return $this->code.'_'.$key; }, $keys);
         }
         $data = $this->call('state.get', [$keys, $detailed]);
-        if (is_array($data)) {
+        if (is_array($keys) && ! empty($data)) {
             foreach ($data as $k => $v) {
                 $_k = preg_replace("/^{$this->code}_/", '', $k);
                 $data[$_k] = $v;
