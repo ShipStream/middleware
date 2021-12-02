@@ -285,7 +285,7 @@ for the `ShipStream_Test` plugin which sets the version to '0.1' and adds some d
         <plugin>
             <ShipStream_Test>
                 <whoami>Your Name</whoami>
-                <service_url>http://bot.whatismyipaddress.com</service_url>
+                <service_url>http://ipinfo.io/ip</service_url>
                 <events>
                     <order>
                         <created>1</created>
@@ -390,7 +390,7 @@ config.xml:
         <plugin>
             <ShipStream_Test>
                 <whoami>Your Name</whoami>
-                <service_url>http://bot.whatismyipaddress.com</service_url>
+                <service_url>http://ipinfo.io/ip</service_url>
                 <secret_key backend_model="adminhtml/system_config_backend_encrypted"/>
             </ShipStream_Test>
         </plugin>
