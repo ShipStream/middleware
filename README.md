@@ -175,6 +175,7 @@ config file for the `default/middleware/system/base_url` value:
 </config>
 ```
 
+Another honorable mention for an HTTPS via SSH tunneling service is [ngrok](https://ngrok.com/).
 
 Developer Guide
 ===============
@@ -573,7 +574,7 @@ uses webhooks to receive these events.
 To receive webhook notifications on the middleware environment you will need your Docker container to be accessible
 by the ShipStream instance over http(s) and to know the url that can be used to reach your local environment. For
 example, if your ShipStream instance is local it could be `http://localhost/` or if it is remote it could be your
-public IP or a proxy running a tunnel to your localhost (e.g. [ngrok](https://ngrok.com/)).
+public IP or a proxy running an [SSH Tunnel](https://github.com/ShipStream/middleware#https-tunnel) to your localhost.
 
 1. Configure the correct url for your environment in `app/etc/local.xml` at `middleware/system/base_url`
 2. Run `bin/mwrun <your-plugin> --respond-url` to get the full url for the webhook endpoint
