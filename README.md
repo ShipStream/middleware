@@ -575,7 +575,7 @@ by the ShipStream instance over http(s) and to know the url that can be used to 
 example, if your ShipStream instance is local it could be `http://localhost/` or if it is remote it could be your
 public IP or a proxy running a tunnel to your localhost (e.g. [ngrok](https://ngrok.com/)).
 
-1. Configure the correct url for your environment in `config.xml` at `middleware/system/base_url`
+1. Configure the correct url for your environment in `app/etc/local.xml` at `middleware/system/base_url`
 2. Run `bin/mwrun <your-plugin> --respond-url` to get the full url for the webhook endpoint
 3. Test that the url is reachable as expected using `curl <your-url>` (should see "Got it!" if successful)
 4. Add a webhook to ShipStream at System > Plugins > Webhooks > Create Webhook using your url from step 2
