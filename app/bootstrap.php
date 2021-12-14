@@ -71,6 +71,19 @@ final class Middleware
     }
 
     /**
+     * Queue simulation - run at the end of execution
+     *
+     * @return void
+     */
+    public function runEventQueue()
+    {
+        foreach ($this->_eventQueue as $event) {
+            [$eventMethod, $param] = $event;
+            $this->_pluginInstance->$eventMethod($param);
+        }
+    }
+
+    /**
      * Call the method of the plugin
      *
      * @param string $method
@@ -83,12 +96,7 @@ final class Middleware
             throw new Exception(sprintf('The plugin method "%s" is not callable.', $method));
         }
         $this->_pluginInstance->$method();
-
-        // Queue simulation.
-        foreach ($this->_eventQueue as $event) {
-            [$eventMethod, $param] = $event;
-            $this->_pluginInstance->$eventMethod($param);
-        }
+        $this->runEventQueue();
     }
 
     /**
@@ -164,6 +172,7 @@ final class Middleware
             throw new Exception(sprintf('The plugin method "%s" is not callable.', $methodName));
         }
         $this->_pluginInstance->$methodName($message);
+        $this->runEventQueue();
     }
 
     /**
@@ -189,6 +198,7 @@ final class Middleware
             throw new Exception('Webhook request failed.', 409);
         }
         $this->yieldWebhook();
+        $this->runEventQueue();
     }
 
     /**
@@ -477,6 +487,7 @@ final class Middleware
         }
         include $templatePath;
         $html = ob_get_clean();
+        $this->runEventQueue();
         return $html;
     }
 
@@ -510,6 +521,7 @@ final class Middleware
         if (FALSE === ($response = $this->_pluginInstance->$callMethod($query, $headers, $data))) {
             throw new Exception('Callback request failed.', 409);
         }
+        $this->runEventQueue();
 
         echo $response;
     }
