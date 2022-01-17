@@ -433,12 +433,12 @@ abstract class Plugin_Abstract implements Plugin_Interface
      *
      * @param string $method
      * @param array $data
-     * @param null|int $delayTime - in seconds
+     * @param null|int $executeAt - Unix Timestamp
      * @return void
      */
-    final public function addEvent($method, array $data, $delayTime = NULL)
+    final public function addEvent($method, array $data, $executeAt = NULL)
     {
-        $this->middleware->addEventQueue([$method, new Varien_Object($data), $delayTime]);
+        $this->middleware->addEventQueue([$method, new Varien_Object($data), $executeAt]);
     }
 
     /**

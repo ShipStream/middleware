@@ -195,10 +195,10 @@ interface Plugin_Interface
      *
      * @param string $method
      * @param array $data
-     * @param null|int $delayTime - in seconds
+     * @param null|int $executeAt - Unix Timestamp
      * @return void
      */
-    function addEvent($method, array $data, $delayTime = NULL);
+    function addEvent($method, array $data, $executeAt = NULL);
 
     /**
      * Get a locking object using a safely name-spaced key
