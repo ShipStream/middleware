@@ -851,6 +851,9 @@ indicate a failure which should be reported to the user and that can be retried 
     }
 ```
 
+An optional third parameter can be used to set a future timestamp (Unix timestamp integer) at which the event should be executed. The
+system does not guarantee that it is executed at this exact time, only on or after.
+
 ## Global Locking
 
 ***Use this sparingly!!***
