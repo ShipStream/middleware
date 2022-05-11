@@ -106,6 +106,7 @@ Installation
        <middleware>
          <system>
            <base_url>http://localhost/</base_url>
+           <app_title>ACME Fulfillment</app_title>
            <log>stdout</log>
            <timezone>America/New_York</timezone>
          </system>

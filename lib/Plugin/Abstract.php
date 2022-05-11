@@ -44,6 +44,14 @@ abstract class Plugin_Abstract implements Plugin_Interface
         $this->code = $code;
     }
 
+    /**
+     * @return string
+     */
+    final public function getAppTitle()
+    {
+        return $this->middleware->getConfig('middleware/system/app_title') ?: 'ShipStream';
+    }
+
     /*
      * Abstract methods which may be overridden by plugins
      */

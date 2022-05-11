@@ -5,6 +5,7 @@
             <!-- System Configuration -->
             <system>
                 <base_url>http://localhost/</base_url> <!-- public url to 'pub' directory -->
+                <app_title>ShipStream Middleware</app_title> <!-- name of the app - may be reported in some plugins -->
                 <log>stdout</log>                      <!-- stdout, syslog or file name (e.g. system.log) -->
                 <timezone>America/New_York</timezone>  <!-- the merchant's configured default timezone -->
             </system>
