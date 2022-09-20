@@ -86,9 +86,15 @@ interface Plugin_Interface
 
     /**
      * @return string[]
-     * throws Plugin_Exception
+     * @throws Plugin_Exception
      */
     function connectionDiagnostics();
+
+    /**
+     * @return void
+     * @throws Plugin_Exception
+     */
+    function reinstall();
 
     /*
      * Available helper methods which CANNOT be overridden by plugins
