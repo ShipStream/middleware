@@ -56,11 +56,6 @@ class Varien_Object implements ArrayAccess
     protected $_origData;
 
     /**
-     * @var array
-     */
-    protected $_dirty;
-
-    /**
      * Name of object id field
      *
      * @var string
@@ -82,18 +77,6 @@ class Varien_Object implements ArrayAccess
     protected $_isDeleted = FALSE;
 
     /**
-     * Map short fields names to its full names
-     *
-     * @var array
-     */
-    protected $_oldFieldsMap = array();
-
-    /**
-     * Map of fields to sync to other fields upon changing their data
-     */
-    protected $_syncFieldsMap = array();
-
-    /**
      * Constructor
      *
      * By default is looking for first argument as array and assignes it as object attributes
@@ -102,55 +85,13 @@ class Varien_Object implements ArrayAccess
      */
     public function __construct()
     {
-        $this->_initOldFieldsMap();
-        if ($this->_oldFieldsMap) {
-            $this->_prepareSyncFieldsMap();
-        }
-
         $args = func_get_args();
         if (empty($args[0])) {
             $args[0] = array();
         }
         $this->_data = $args[0];
-        $this->_addFullNames();
 
         $this->_construct();
-    }
-
-    protected function _addFullNames()
-    {
-        $existedShortKeys = array_intersect($this->_syncFieldsMap, array_keys($this->_data));
-        if (!empty($existedShortKeys)) {
-            foreach ($existedShortKeys as $key) {
-                $fullFieldName = array_search($key, $this->_syncFieldsMap);
-                $this->_data[$fullFieldName] = $this->_data[$key];
-            }
-        }
-    }
-
-    /**
-     * Inits mapping array of object's previously used fields to new fields.
-     * Must be overloaded by descendants to set concrete fields map.
-     *
-     * @return $this
-     */
-    protected function _initOldFieldsMap()
-    {
-
-    }
-
-    /**
-     * Called after old fields are inited. Forms synchronization map to sync old fields and new fields
-     * between each other.
-     *
-     * @return $this
-     */
-    protected function _prepareSyncFieldsMap()
-    {
-        $old2New = $this->_oldFieldsMap;
-        $new2Old = array_flip($this->_oldFieldsMap);
-        $this->_syncFieldsMap = array_merge($old2New, $new2Old);
-        return $this;
     }
 
     /**
@@ -201,7 +142,7 @@ class Varien_Object implements ArrayAccess
     /**
      * Retrieve name of object id field
      *
-     * @return  Varien_Object
+     * @return  string
      */
     public function getIdFieldName()
     {
@@ -270,13 +211,8 @@ class Varien_Object implements ArrayAccess
         $this->_hasDataChanges = TRUE;
         if(is_array($key)) {
             $this->_data = $key;
-            $this->_addFullNames();
         } else {
             $this->_data[$key] = $value;
-            if (isset($this->_syncFieldsMap[$key])) {
-                $fullFieldName = $this->_syncFieldsMap[$key];
-                $this->_data[$fullFieldName] = $value;
-            }
         }
         return $this;
     }
@@ -294,30 +230,6 @@ class Varien_Object implements ArrayAccess
         $this->_hasDataChanges = TRUE;
         if (is_null($key)) {
             $this->_data = array();
-        } else {
-            unset($this->_data[$key]);
-            if (isset($this->_syncFieldsMap[$key])) {
-                $fullFieldName = $this->_syncFieldsMap[$key];
-                unset($this->_data[$fullFieldName]);
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * Unset old fields data from the object.
-     *
-     * $key can be a string only. Array will be ignored.
-     *
-     * @param string $key
-     * @return $this
-     */
-    public function unsetOldData($key=NULL)
-    {
-        if (is_null($key)) {
-            foreach ($this->_syncFieldsMap as $key => $newFieldName) {
-                unset($this->_data[$key]);
-            }
         } else {
             unset($this->_data[$key]);
         }
@@ -669,7 +581,7 @@ class Varien_Object implements ArrayAccess
      * @return mixed
      */
 
-    public function __get($var)
+    public function __get(string $var)
     {
         return $this->getData($var);
     }
@@ -680,7 +592,7 @@ class Varien_Object implements ArrayAccess
      * @param string $var
      * @param mixed $value
      */
-    public function __set($var, $value)
+    public function __set(string $var, $value)
     {
         $this->setData($var, $value);
     }
@@ -809,7 +721,7 @@ class Varien_Object implements ArrayAccess
      *
      * @param mixed $data
      * @param array $objects
-     * @return string
+     * @return array
      */
     public function debug($data=NULL, &$objects=array())
     {
@@ -881,40 +793,4 @@ class Varien_Object implements ArrayAccess
         return isset($this->_data[$offset]) ? $this->_data[$offset] : NULL;
     }
 
-
-    /**
-     * @param string $field
-     * @return boolean
-     */
-    public function isDirty($field=NULL)
-    {
-        if (empty($this->_dirty)) {
-            return FALSE;
-        }
-        if (is_null($field)) {
-            return TRUE;
-        }
-        return isset($this->_dirty[$field]);
-    }
-
-    /**
-     * @param string $field
-     * @param boolean $flag
-     * @return $this
-     */
-    public function flagDirty($field, $flag=TRUE)
-    {
-        if (is_null($field)) {
-            foreach ($this->getData() as $field=>$value) {
-                $this->flagDirty($field, $flag);
-            }
-        } else {
-            if ($flag) {
-                $this->_dirty[$field] = TRUE;
-            } else {
-                unset($this->_dirty[$field]);
-            }
-        }
-        return $this;
-    }
 }
