@@ -6,7 +6,11 @@
 <body>
     <h1>OAuth Connection</h1>
     <hr />
-    <?php if ($plugin->getPluginInfo('info/oauth/enabled')): ?>
+    <?php if (!$plugin->getPluginInfo('info/oauth/enabled')): ?>
+        <?php echo 'OAuth is not supported.' ?>
+    <?php elseif (!$plugin->getConfig('use_oauth')): ?>
+        <?php echo 'OAuth is disabled.' ?>
+    <?php else: ?>
         <?php if ($configErrors = getOauthConfigErrors($plugin)): ?>
             <?php echo implode("<br />", $configErrors) ?>
         <?php elseif ($validationErrors = getOauthValidationErrors($plugin)): ?>
@@ -22,8 +26,6 @@
         <?php else: ?>
             <?php echo $plugin->oauthGetConnectButton() ?>
         <?php endif ?>
-    <?php else: ?>
-        <?php echo 'OAuth is disabled.' ?>
     <?php endif ?>
 </body>
 </html>

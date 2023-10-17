@@ -551,6 +551,84 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
+     * @param array $stateData
+     * @return array
+     */
+    function oauthGetStateData(array $stateData): string
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * @param string $data
+     * @return array
+     */
+    function oauthDecodeStateData(string $data): array
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * Call an event immediately
+     *
+     * @param string $method
+     * @param array $data
+     * @return void
+     */
+    function callEvent(string $method, array $data): void
+    {
+        $this->$method($data);
+    }
+
+    /**
+     * Queue an EDI message for ingest
+     *
+     * @param MWE_EDI_Model_Message $message
+     * @return void
+     */
+    public function queueIngestMessage(MWE_EDI_Model_Message $message): void
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * Ingest an EDI message
+     *
+     * @param MWE_EDI_Model_Message $message
+     * @return void
+     * @throws Plugin_Exception
+     */
+    public function ingestMessage(MWE_EDI_Model_Message $message): void
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * Queue sending an OrderAck message
+     *
+     * @param MWE_EDI_Model_Message $purchaseOrderMessage
+     * @param string $orderId
+     * @return void
+     */
+    public function queueGenerateOrderAck(MWE_EDI_Model_Message $purchaseOrderMessage, string $orderId): void
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * Send an OrderAck message
+     *
+     * @param MWE_EDI_Model_Message $purchaseOrderMessage
+     * @param string $orderId
+     * @return void
+     * @throws Plugin_Exception
+     */
+    public function generateOrderAck(MWE_EDI_Model_Message $purchaseOrderMessage, string $orderId): void
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
      * @param \Middleware $middleware
      */
     final public function _setMiddleware(\Middleware $middleware)

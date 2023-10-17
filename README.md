@@ -817,8 +817,8 @@ throw or re-throw a `Plugin_Exception` rather than reporting and resolving error
 
 ## Job Queue
 
-For any actions that may take a significant amount of time or need to be retried later you should not run them
-directly but rather run them using the job queue. For example, if an action discovers 100 new orders to be created,
+For any actions that may take a significant amount of time or need to be retried later, you should not run them
+directly but rather run them using the job queue using `addEvent`. For example, if an action discovers 100 new orders to be created,
 do not create them all serially in the foreground but rather create a separate job for each order so that the
 errors can be reported and handled for each order individually. Jobs added to the queue which resulted in an error
 can be viewed and retried by the user via the user interface.
@@ -854,6 +854,13 @@ indicate a failure which should be reported to the user and that can be retried 
 
 An optional third parameter can be used to set a future timestamp (Unix timestamp integer) at which the event should be executed. The
 system does not guarantee that it is executed at this exact time, only on or after.
+
+### Instant run
+
+In some cases you may need the job to run in the foreground but still want to take advantage of the ability to
+let the users retry failed jobs which is afforded by using `addEvent.` In this case you may use `callEvent` in
+the same manner. This injects an event into the job queue in an already running state and then immediately calls
+the job method in the foreground.
 
 ## Global Locking
 
@@ -947,7 +954,21 @@ $this->removeCache('some_data');
 
 ## OAuth
 
-*TODO*
+Several OAuth methods are defined in the interfate to provide an abstracted support for performing OAuth "Client Credentials"
+type authentication whereby the user authenticates and authorizes the plugin through a redirect to the third-party system
+with which the plugin is integrating. These methods are:
+
+- oauthHandleRedirect(request: array): void
+- oauthGetRedirectUrl([params: array = [...]]): string
+- oauthGetConnectUrl([redirectUrl: null|string = NULL]): string
+- oauthGetConnectButton([connectParams: array = [...]]): string
+- oauthDisconnect([params: array = [...]]): void
+- oauthSetTokenData(accessToken: string): mixed
+- oauthGetTokenData(): array|null|string
+- oauthValidateConfig(): void
+- oauthTest(): string[]
+
+Therefore, it should not be necessary to write a custom controller for each new OAuth integration as these methods should be able to handle the redirection and capture of the token data in a way that provides enough flexibility to handle any typical OAuth provider. 
 
 ## Diagnostics
 

@@ -39,10 +39,23 @@ interface Plugin_Interface
     function oauthGetRedirectUrl($area = NULL);
 
     /**
-     * @param null|string $redirectUrl
+     * @param array $stateData
+     * @return array
+     */
+    function oauthGetStateData(array $stateData): string;
+
+    /**
+     * @param string $data
+     * @return array
+     */
+    function oauthDecodeStateData(string $data): array;
+
+    /**
+     * @param string $redirectUrl
+
      * @return string
      */
-    function oauthGetConnectUrl($redirectUrl = NULL);
+    function oauthGetConnectUrl($redirectUrl);
 
     /**
      * @param array $connectParams
@@ -74,6 +87,14 @@ interface Plugin_Interface
     function oauthValidateConfig();
 
     /**
+     * Retrieve OAuth url
+     *
+     * @param array $params
+     * @return string
+     */
+    function oauthGetUrl($params = array());
+
+    /**
      * @return mixed
      * @throws Exception
      */
@@ -85,16 +106,17 @@ interface Plugin_Interface
     function hasConnectionConfig();
 
     /**
-     * @return string[]
-     * @throws Plugin_Exception
+     * throws Plugin_Exception
      */
-    function connectionDiagnostics();
+    function connectionDiagnostics(bool $super): array;
 
     /**
-     * @return void
+     * Reinstall the plugin without doing anything destructive (e.g. can update callback urls).
+     *
+     * @return array
      * @throws Plugin_Exception
      */
-    function reinstall();
+    function reinstall(): array;
 
     /*
      * Available helper methods which CANNOT be overridden by plugins
@@ -181,15 +203,7 @@ interface Plugin_Interface
     function logException(Exception $e);
 
     /**
-     * Retrieve OAuth url
-     *
-     * @param array $params
-     * @return string
-     */
-    function oauthGetUrl($params = array());
-
-    /**
-     * Check whether use debug mode
+     * Check whether to use debug mode
      *
      * @param null|bool $isDebug
      * @return bool
@@ -202,9 +216,53 @@ interface Plugin_Interface
      * @param string $method
      * @param array $data
      * @param null|int $executeAt - Unix Timestamp
-     * @return void
      */
     function addEvent($method, array $data, $executeAt = NULL);
+
+    /**
+     * Call an event immediately
+     *
+     * @param string $method
+     * @param array $data
+     * @return void
+     */
+    function callEvent(string $method, array $data): void;
+
+    /**
+     * Queue an EDI message for ingest
+     *
+     * @param MWE_EDI_Model_Message $message
+     * @return void
+     */
+    public function queueIngestMessage(MWE_EDI_Model_Message $message): void;
+
+    /**
+     * Ingest an EDI message
+     *
+     * @param MWE_EDI_Model_Message $message
+     * @return void
+     * @throws Plugin_Exception
+     */
+    public function ingestMessage(MWE_EDI_Model_Message $message): void;
+
+    /**
+     * Queue sending an OrderAck message
+     *
+     * @param MWE_EDI_Model_Message $purchaseOrderMessage
+     * @param string $orderId
+     * @return void
+     */
+    public function queueGenerateOrderAck(MWE_EDI_Model_Message $purchaseOrderMessage, string $orderId): void;
+
+    /**
+     * Send an OrderAck message
+     *
+     * @param MWE_EDI_Model_Message $purchaseOrderMessage
+     * @param string $orderId
+     * @return void
+     * @throws Plugin_Exception
+     */
+    public function generateOrderAck(MWE_EDI_Model_Message $purchaseOrderMessage, string $orderId): void;
 
     /**
      * Get a locking object using a safely name-spaced key
