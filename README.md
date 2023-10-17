@@ -432,6 +432,18 @@ plugin.xml:
 </plugin>
 ```
 
+## Activation
+
+A plugin may optionally implement some methods which aid in initializing the plugin state when it is created, and
+destroying it when it is deactivated. For example, it may need to register a webhook with the integration and
+then unregister the webhook when it is deactivated to prevent the webhook from continuing to fire when the
+plugin is no longer active.
+
+- `hasActivation(): bool` - Return `true` if the `activate()` method needs to do anything upon activation.
+- `activate(): string[]` - Return an array of messages for the end-user.
+- `deactivate(): string[]` - Return an array of messages for the end-user.
+- `reinstall(): array` - Non-destructively update the plugin state - for example, will be run if the public url is updated so that webhooks and callbacks can be updated.
+
 ## ShipStream API Calls
 
 You may call ShipStream API methods from the plugin using the `call` method so there is no need to deal with

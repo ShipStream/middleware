@@ -110,6 +110,30 @@ interface Plugin_Interface
      */
     function connectionDiagnostics(bool $super): array;
 
+
+    /**
+     * True if the plugin needs to take specific actions upon activation (allows Reinstall button)
+     *
+     * @return bool
+     */
+    function hasActivation(): bool;
+
+    /**
+     * Activate the plugin
+     *
+     * @return string[]
+     * @throws Plugin_Exception
+     */
+    function activate(): array;
+
+    /**
+     * Deactivate the plugin
+     *
+     * @return string[]
+     * @throws Plugin_Exception
+     */
+     function deactivate(): array;
+
     /**
      * Reinstall the plugin without doing anything destructive (e.g. can update callback urls).
      *

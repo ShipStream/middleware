@@ -52,9 +52,58 @@ abstract class Plugin_Abstract implements Plugin_Interface
         return $this->middleware->getConfig('middleware/system/app_title') ?: 'ShipStream';
     }
 
+    /**
+     * Allow a plugin to deactivate itself
+     */
+    final public function deactivateSelf(): void
+    {
+        return;
+    }
+
     /*
      * Abstract methods which may be overridden by plugins
      */
+
+    /**
+     * @return bool
+     */
+    public function hasActivation(): bool
+    {
+        return FALSE;
+    }
+
+    /**
+     * Activate the plugin
+     *
+     * @return string[]
+     * @throws Plugin_Exception
+     */
+    public function activate(): array
+    {
+        return [];
+    }
+
+    /**
+     * Deactivate the plugin
+     *
+     * @return string[]
+     * @throws Plugin_Exception
+     */
+    public function deactivate(): array
+    {
+        return [];
+    }
+
+    /**
+     * Reinstall the plugin without doing anything destructive (e.g. can update callback urls).
+     *
+     * @return array
+     * @throws Plugin_Exception
+     */
+    public function reinstall(): array
+    {
+        return [];
+    }
 
     /**
      * @param array $query
