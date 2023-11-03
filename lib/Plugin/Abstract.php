@@ -677,6 +677,28 @@ abstract class Plugin_Abstract implements Plugin_Interface
         throw new Exception('Not implemented.');
     }
 
+
+    /**
+     * Get warehouse address
+     *
+     * @param int $warehouseId
+     * @return array
+     */
+    final public function getWarehouseAddress(int $warehouseId): array
+    {
+        $address = $this->middleware->getConfig("warehouse/id-$warehouseId/address");
+        if ( ! $address) {
+            throw new Exception('Add address details to app/etc/local.xml');
+        }
+        $address = array_map('strval', (array)$address);
+        foreach (['street', 'city', 'region', 'country', 'postcode'] as $field) {
+            if (empty($address[$field])) {
+                throw new Exception('Addres details missing field: '.$field);
+            }
+        }
+        return $address;
+    }
+
     /**
      * @param \Middleware $middleware
      */
