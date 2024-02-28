@@ -503,7 +503,6 @@ abstract class Plugin_Abstract implements Plugin_Interface
      *
      * @param string $key
      * @return Plugin_Lock
-     * @throws Plugin_Exception
      */
     final public function getLock($key)
     {
