@@ -242,7 +242,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
      * @param int|string|array|stdClass|null $value
      * @param int|string|null $ifEquals - if specified, the value is only updated if the value was previously equal to $ifEquals value
      * @return mixed
-     * @throws Exception
+     * @throws Plugin_Exception
      */
     final public function setState($data, $value = NULL, $ifEquals = NULL)
     {
