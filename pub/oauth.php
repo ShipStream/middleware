@@ -45,12 +45,10 @@ try {
     echo $middleware->renderPage('oauth_status.phtml');
 
 } catch (Exception $e) {
-    if ($debug) {
-        if (empty($middleware)) {
-            error_log($e->getMessage());
-        } else {
-            $middleware->log("{$e->getCode()} {$e->getMessage()}");
-        }
+    if (empty($middleware)) {
+        error_log($e->getMessage());
+    } else {
+        $middleware->logException($e);
     }
     echo $e->getMessage();
 }

@@ -22,7 +22,7 @@ if ( ! $debug && $argc == 4 && $argv[3] == '--debug') {
     $debug = TRUE;
     array_pop($argv);
 }
-if ($argc == 2) {
+if ($argc <= 2) {
     die($usage);
 }
 

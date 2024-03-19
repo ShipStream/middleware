@@ -68,6 +68,7 @@ final class Middleware
     public function addEventQueue(array $event)
     {
         $this->_eventQueue[] = $event;
+        $this->log('Event added to queue: '.json_encode($event));
     }
 
     /**
@@ -79,7 +80,12 @@ final class Middleware
     {
         foreach ($this->_eventQueue as $event) {
             [$eventMethod, $param] = $event;
-            $this->_pluginInstance->$eventMethod($param);
+            try {
+                $this->_pluginInstance->$eventMethod($param);
+                $this->log('Event processed successfully: '.$eventMethod);
+            } catch (Throwable $e) {
+                $this->log('Error processing event '.$eventMethod.': '.$e->getMessage());
+            }
         }
     }
 
@@ -113,7 +119,7 @@ final class Middleware
      */
     public function diagnostics()
     {
-        return $this->_pluginInstance->connectionDiagnostics();
+        return $this->_pluginInstance->connectionDiagnostics(TRUE);
     }
 
     /**

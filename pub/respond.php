@@ -43,12 +43,10 @@ try {
     $middleware->log(sprintf('Received webhook for %s topic with message: %s', $topic, $json), 'webhooks.log');
     $middleware->respond($topic, $message);
 } catch (Exception $e) {
-    if ($debug) {
-        if (empty($middleware)) {
-            error_log($e->getMessage());
-        } else {
-            $middleware->log("{$e->getCode()} {$e->getMessage()}");
-        }
+    if (empty($middleware)) {
+        error_log($e->getMessage());
+    } else {
+        $middleware->logException($e);
     }
     http_response_code($e->getCode() ?: 500);
 }

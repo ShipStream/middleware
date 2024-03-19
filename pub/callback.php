@@ -40,7 +40,7 @@ try {
     if (empty($middleware)) {
         error_log($e->getMessage());
     } else {
-        $middleware->log("{$e->getCode()} {$e->getMessage()}");
+        $middleware->logException($e);
     }
     http_response_code($e->getCode() ?: 500);
 }
