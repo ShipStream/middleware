@@ -137,10 +137,9 @@ abstract class Plugin_Abstract implements Plugin_Interface
      * @param array $params
      * @return string
      */
-    public function oauthGetRedirectUrl($params = array())
+    public function oauthGetRedirectUrl($area = NULL, $bypassGateway = FALSE)
     {
         $params = array_merge(
-            $params,
             ['plugin' => $this->code],
             ['action' => 'redirect']
         );

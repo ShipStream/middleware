@@ -36,7 +36,7 @@ interface Plugin_Interface
      * @param null|string $area
      * @return string
      */
-    function oauthGetRedirectUrl($area = NULL);
+    function oauthGetRedirectUrl($area = NULL, $bypassGateway = FALSE);
 
     /**
      * @param array $stateData
@@ -106,7 +106,7 @@ interface Plugin_Interface
     function hasConnectionConfig();
 
     /**
-     * throws Plugin_Exception
+     * @throws Plugin_Exception
      */
     function connectionDiagnostics(bool $super): array;
 
