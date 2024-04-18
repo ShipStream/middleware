@@ -997,12 +997,12 @@ $this->removeCache('some_data');
 
 ## OAuth
 
-Several OAuth methods are defined in the interfate to provide an abstracted support for performing OAuth "Client Credentials"
+Several OAuth methods are defined in the interface to provide an abstracted support for performing OAuth "Client Credentials"
 type authentication whereby the user authenticates and authorizes the plugin through a redirect to the third-party system
 with which the plugin is integrating. These methods are:
 
 - oauthHandleRedirect(request: array): void
-- oauthGetRedirectUrl([params: array = [...]]): string
+- oauthGetRedirectUrl(area: string, bypassGateway: bool): string
 - oauthGetConnectUrl([redirectUrl: null|string = NULL]): string
 - oauthGetConnectButton([connectParams: array = [...]]): string
 - oauthDisconnect([params: array = [...]]): void

@@ -34,6 +34,7 @@ interface Plugin_Interface
 
     /**
      * @param null|string $area
+     * @param bool $bypassGateway
      * @return string
      */
     function oauthGetRedirectUrl($area = NULL, $bypassGateway = FALSE);

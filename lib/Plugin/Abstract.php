@@ -134,7 +134,8 @@ abstract class Plugin_Abstract implements Plugin_Interface
     public function oauthHandleRedirect($request) {}
 
     /**
-     * @param array $params
+     * @param null|string $area
+     * @param bool $bypassGateway
      * @return string
      */
     public function oauthGetRedirectUrl($area = NULL, $bypassGateway = FALSE)
