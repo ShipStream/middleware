@@ -240,6 +240,7 @@ The minimal required file structure from the root of the middleware directory is
   * etc
     * config.xml
     * plugin.xml
+    * system.xml
   * Plugin.php
 * app/etc/modules
   * {COMPANY_NAME}_{MODULE_NAME}.xml
@@ -344,6 +345,17 @@ The `plugin.xml` file provides the remaining plugin metadata in the following no
   ([Third-party Remote Callbacks](#third-party-remote-callbacks))
 - `<crontab>` Cron tasks which will be automatically run in the production environment ([Cron Tasks](#cron-tasks))
 
+### system.xml
+
+The `system.xml` file is used to define the configuration fields for the whole system rather than a specific instance
+of the plugin. That is, all plugin subscriptions will share the same configuration values defined in this file and only
+administrators will be able to set the values. This file is not always required, but is typically used for things like
+OAuth 2.0 app credentials or other global settings.
+
+Like `plugin.xml`, the fields defined in this file correspond to the default config values that may be set in `config.xml`
+and just allow the configuration to be set via the Admin UI, so it only affects the rendering of the configuration
+pages and not the values in any way.
+
 ## Plugin Information
 
 The plugin information is defined in the `<info>` node of the `plugin.xml` file under the correct namespace
@@ -398,11 +410,14 @@ Configuration that is highly sensitive can be encrypted in storage by defining t
 attribute. Note, however that encrypted values will not be visible to users so if the configuration field does not pose
 a security threat by being visible to users it may be preferable to leave it unencrypted for convenience to the user.
 
-The user interface for the configuration is defined in `plugin.xml` using matching node names. For example, the `whoami`
-config field defined at `config/default/plugin/ShipStream_Test/whoami` in `config.xml` corresponds to
-`plugin/ShipStream_Test/config/whoami` in `plugin.xml`.
+The user interface for the configuration is defined in `plugin.xml` for instance-specific configuration and `system.xml`
+for global configuration using matching node names. For example, the default value for the `whoami` config field defined
+at `config/default/plugin/ShipStream_Test/whoami` in `config.xml` corresponds to the field definition at
+`plugin/ShipStream_Test/config/whoami` in `plugin.xml` and the default value for the `fulfillment_service` field defined
+at `config/default/plugin/ShipStream_Test/fulfillment_service` in `config.xml` corresponds to the field definition at 
+`config/sections/plugin/groups/ShipStream_Test/fields/fulfillment_service` in `system.xml`.
 
-Each config field can contain the following elements:
+Each config field definition can contain the following elements:
 
 - `<label>` The name of the field presented to the user
 - `<type>` The type of field presented to the user. Supported types are: 'text', 'url', 'email', 'tel', 'date', 
@@ -414,7 +429,7 @@ Each config field can contain the following elements:
 - `<comment>` A comment that will appear below the field to give additional context to the user. May contain HTML; use
 CDATA to avoid character encoding issues in the XML file.
   
-config.xml:
+#### config.xml:
 
 ```xml
 <?xml version="1.0"?>
@@ -424,6 +439,7 @@ config.xml:
             <ShipStream_Test>
                 <whoami>Your Name</whoami>
                 <service_url>http://ipinfo.io/ip</service_url>
+                <fulfillment_service>ShipStream</fulfillment_service>
                 <secret_key backend_model="adminhtml/system_config_backend_encrypted"/>
             </ShipStream_Test>
         </plugin>
@@ -431,7 +447,7 @@ config.xml:
 </config>
 ```
 
-plugin.xml:
+#### plugin.xml:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -462,6 +478,78 @@ plugin.xml:
     </ShipStream_Test>
 </plugin>
 ```
+
+#### system.xml
+
+```xml
+<?xml version="1.0"?>
+<config>
+  <sections>
+    <plugin>
+      <groups>
+        <!-- Section name must be exact same as the plugin name so that plugin code can read it -->
+        <ShipStream_Test translate="label" module="plugin">
+          <label>Test Plugin</label>
+          <sort_order>900</sort_order>
+          <show_in_default>1</show_in_default>
+          <comment><model>ShipStream_Test_GroupComment</model></comment>
+          <sort_fields>
+            <by>label</by>
+          </sort_fields>
+          <fields>
+            <fulfillment_service translate="label" module="plugin">
+              <label>Fulfillment Service Name</label>
+              <sort_order>0</sort_order> <!-- Sort order relative to other fields if sort_fields->by is not specified -->
+              <show_in_default>1</show_in_default>
+              <comment><![CDATA[
+                            The name for the Fulfillment Service and Location to register in the Shopify store.<br/>
+                            <b>Warning:</b> If this value is changed you will need to Deactivate and Activate all
+                            subscriptions and all associated products and open fulfillments will be disassociated.
+                            ]]></comment>
+            </fulfillment_service>
+          </fields>
+        </ShipStream_Test>
+      </groups>
+    </plugin>
+  </sections>
+</config>
+```
+
+The `config/sections/plugin/groups/{Plugin_Namepsace}/fields/{field_name}` nodes may contain child nodes such as:
+
+- `label` – The label of the configuration field
+- `sort_order` – The field position inside the configuration group
+- `frontend_type` - The field input type for displaying of the form item. If a value is not specified, the `text` input type will be used. Common values are:
+  - `text` – Text input field
+  - `textarea` – Textarea field
+  - `select` – Dropdown field. Options for this field are retrieved from `source_model`
+  - `multiselect` – Multiselect field. Options for this field are retrieved from `source_model`
+  - `obscure` - A password input that displays only a masked value. You must also specify `<backend_model>adminhtml/system_config_backend_encrypted</backend_model>`
+    for the field in `system.xml` and ` backend_model="adminhtml/system_config_backend_encrypted"` for the field in `config.xml`.
+- `can_be_empty` – Indicates that multiselect field can contain no values selected, otherwise empty selection will not be saved
+- `source_model` – Specifies the source model that returns option list for select and multiselect fields types. List of mostly used source models:
+  - `adminhtml/system_config_source_locale_country` – returns list of localized country names
+  - `adminhtml/system_config_source_enabledisable` – return list of two options (“Enable” and “Disable”)
+  - `adminhtml/system_config_source_notoptreq` – return list of three options: ("Not", "Optional", "Required")
+  - `adminhtml/system_config_source_yesno` – return boolean options (“Yes”, “No”)
+- `show_in_default` - Should pretty much always be set to 1
+- `tooltip` – A tooltip text for the field. This text is displayed when the mouse is over the field. If you want to specify custom html block for text in tooltip, you should use `tooltip_block`
+- `tooltip_block` – A block class name that will be used as tooltip for this field instead of tooltip text
+- `validate` - A CSS class name that will be applied to form field. Used for validation of the field input. Some usual values:
+  - `required-entry` – validates field value as non empty
+  - `validate-number` – validates field value as numeric
+  - `validate-email` – validates field value as valid email address 
+- `comment` - Text that will be displayed below the form field. Also, this field can use a comment generator model in which case you need specify the following children for it:
+  - `model` – The model class name that should implement the `getCommentText()` method with public access. Parameters those are passed to this method are the following:
+    - `$element` – configuration node itself
+    - `$currentValue` – current field value
+- `depends` – This node contains a list of dependencies of the current field to other fields. The structure of this node is very simple. The child node name is name of field on what this one depends, and the node value is value for make this field visible. For example such configuration:
+  ```
+  <depends>
+      <field_name>1</field_name>
+  </depends>
+  ```
+  will add a rule for displaying of the current field only if the value of field called “field_name” equals to 1.
 
 ## Activation
 
