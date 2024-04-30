@@ -26,6 +26,9 @@ or use it as a standalone "middle-man" app between your systems and ShipStream.
     - [system.xml](#systemxml)
   - [Plugin Information](#plugin-information)
   - [Plugin Configuration](#plugin-configuration)
+    - [config.xml](#configxml-1)
+    - [plugin.xml](#pluginxml-1)
+    - [system.xml](#systemxml-1)
   - [Activation](#activation)
   - [ShipStream API Calls](#shipstream-api-calls)
   - [HTTP Client](#http-client)
@@ -340,8 +343,8 @@ for more on making the configuration accessible to the user.
 The `plugin.xml` file provides the remaining plugin metadata in the following nodes:
 
 - `<info>` Plugin information and feature flags ([Plugin Information](#plugin-information))
-- `<actions>` Buttons that the user can click in the UI to trigger manual actions. ([Plugin Configuration](#plugin-configuration))
-- `<config>` Form fields that will be presented to the user for configuring the subscription ([Plugin Configuration](#plugin-configuration))
+- `<actions>` Buttons that the user can click in the UI to trigger manual actions. ([Manual Actions](#manual-actions))
+- `<config>` Form fields that will be presented to the user for configuring the subscription ([Plugin Configuration](#plugin-configuration) > [plugin.xml](#pluginxml-1))
 - `<routes>` Definition of urls which should map to plugin method for receiving external requests
   ([Third-party Remote Callbacks](#third-party-remote-callbacks))
 - `<crontab>` Cron tasks which will be automatically run in the production environment ([Cron Tasks](#cron-tasks))
@@ -351,11 +354,7 @@ The `plugin.xml` file provides the remaining plugin metadata in the following no
 The `system.xml` file is used to define the configuration fields for the whole system rather than a specific instance
 of the plugin. That is, all plugin subscriptions will share the same configuration values defined in this file and only
 administrators will be able to set the values. This file is not always required, but is typically used for things like
-OAuth 2.0 app credentials or other global settings.
-
-Like `plugin.xml`, the fields defined in this file correspond to the default config values that may be set in `config.xml`
-and just allow the configuration to be set via the Admin UI, so it only affects the rendering of the configuration
-pages and not the values in any way.
+OAuth 2.0 app credentials or other global settings. See [system.xml](#systemxml-1) for more information.
 
 ## Plugin Information
 
@@ -430,7 +429,7 @@ Each config field definition can contain the following elements:
 - `<comment>` A comment that will appear below the field to give additional context to the user. May contain HTML; use
 CDATA to avoid character encoding issues in the XML file.
   
-#### config.xml:
+### config.xml
 
 ```xml
 <?xml version="1.0"?>
@@ -448,7 +447,7 @@ CDATA to avoid character encoding issues in the XML file.
 </config>
 ```
 
-#### plugin.xml:
+### plugin.xml
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -480,7 +479,11 @@ CDATA to avoid character encoding issues in the XML file.
 </plugin>
 ```
 
-#### system.xml
+### system.xml
+
+Like `plugin.xml`, the fields defined in this file correspond to the default config values that may be set in `config.xml`
+and just allow the configuration to be set via the Admin UI, so it only affects the rendering of the configuration
+pages and not the values in any way.
 
 ```xml
 <?xml version="1.0"?>
