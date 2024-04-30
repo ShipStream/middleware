@@ -23,6 +23,7 @@ or use it as a standalone "middle-man" app between your systems and ShipStream.
     - [Register Plugin](#register-plugin)
     - [config.xml](#configxml)
     - [plugin.xml](#pluginxml)
+    - [system.xml](#systemxml)
   - [Plugin Information](#plugin-information)
   - [Plugin Configuration](#plugin-configuration)
   - [Activation](#activation)
