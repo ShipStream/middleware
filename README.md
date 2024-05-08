@@ -163,7 +163,7 @@ You can use a `.env` file in the root of the project to set some configuration o
 
 If you need to support callbacks and webhooks from systems not in your local development environment you need your
 url to be publicly accessible. One easy and free way to accomplish this is to use [ngrok](https://ngrok.com) or [localhost.run](https://localhost.run)
-which are simple tunneling services. The ngrok service uses it's own command line interface and is more robust, while
+which are simple tunneling services. The ngrok service uses its own command line interface and is more robust, while
 localhost.run only requires the common `ssh` command.
 
 ```
@@ -173,7 +173,7 @@ $ ngrok http 80
 Or:
 
 ```
-$ ssh -R 80:localhost:80 localhost.run
+$ ssh -R 80:localhost:80 nokey@localhost.run
 ```
 
 If you changed the `HOST_PORT` in
@@ -188,10 +188,10 @@ Or:
 
 ```
 $ source .env
-$ ssh -R 80:localhost:${HOST_PORT} localhost.run
+$ ssh -R 80:localhost:${HOST_PORT} nokey@localhost.run
 ```
 
-Upon a successful connection, you will be given a unique domain name like `user-938444e1.localhost.run`. On the free
+Upon a successful connection, you will be given a unique domain name like `4c0dfddeedc0d8.lhr.life`. On the free
 plans this will only last a few hours before it needs to be refreshed with a new domain name. Use this url in the
 `app/etc/local.xml` config file for the `default/middleware/system/base_url` value:
 
@@ -201,7 +201,7 @@ plans this will only last a few hours before it needs to be refreshed with a new
     <default>
         <middleware>
             <system>
-                <base_url>https://user-938444e1.localhost.run/</base_url>
+                <base_url>https://4c0dfddeedc0d8.lhr.life/</base_url>
                 ...
             </system>
             ...
