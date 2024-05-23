@@ -707,17 +707,27 @@ uses webhooks to receive these events.
 
 ### Installation
 
-To receive webhook notifications on the middleware environment you will need your Docker container to be accessible
-by the ShipStream instance over http(s) and to know the url that can be used to reach your local environment. For
-example, if your ShipStream instance is local it could be `http://localhost/` or if it is remote it could be your
-public IP or a proxy running an [SSH Tunnel](https://github.com/ShipStream/middleware#https-tunnel) to your localhost.
+To receive ShipStream Events, Callbacks and generic Webhooks in the middleware environment you will need your Docker
+container to be accessible by the ShipStream instance over http(s) and to know the url that can be used to reach your
+local environment. For example, if your ShipStream instance is local it could be `http://localhost/` or if it is remote
+it could be your public site address or a reverse proxy running an [SSH Tunnel](https://github.com/ShipStream/middleware#https-tunnel) to your localhost.
 
-1. Configure the correct url for your environment in `app/etc/local.xml` at `middleware/system/base_url`
-2. Run `bin/mwrun <your-plugin> --respond-url` to get the full url for the webhook endpoint
-3. Test that the url is reachable as expected using `curl <your-url>` (should see "Got it!" if successful)
-4. Add a webhook to ShipStream at System > Plugins > Webhooks > Create Webhook using your url from step 2
-5. Click the newly added Webhook and click "Send Test Event" to verify a successful connection
-6. Inspect `logs/webhooks.log` to verify the webhook was received
+#### Webhook setup
+
+Since the middleware environment runs by itself, to receive events from ShipStream you must setup a webhook in ShipStream
+for the events you wish to receive. The following steps will guide you through the process:
+
+1. Configure the correct url for your environment in `app/etc/local.xml` at the `middleware/system/base_url` config node. This is the public url of your development environment.
+2. Run `bin/mwrun <your-plugin> --respond-url` to get the full url for the webhook endpoint. This is the base url plus the path and query parameters needed to route the request.
+3. Test that the url is reachable as expected using `curl`. For example: `curl -X POST --data '{"topic":"order:created","message":{"unique_id":"1234"}}' -D - "$(bin/mwrun ShipStream_Test --respond-url)"`
+4. Verify that the request was received by inspecting `logs/webhooks.log` and `logs/main.log` for any errors.
+5. Add a webhook to ShipStream at System > Plugins > Webhooks > Create Webhook using your url from step 2 with the topics that your plugin shall respond to.
+6. Click the newly added Webhook and click "Send Test Event" to verify a successful connection
+7. Inspect `logs/webhooks.log` to verify the webhook was received
+
+**If your public url changes (such as is common when using the free version of ngrok) you will need to update the Webhook Url in ShipStream accordingly (steps 1 and 2).**
+
+![Screenshot Demonstrating Steps 1-4](assets/tunnel-test.png)
 
 ### Subscribing to topics
 
