@@ -2,17 +2,19 @@
 
 class Middleware_Autoload
 {
+    private string $_pluginPrefix;
+    private array $_pluginLoader;
 
     /**
      * Register SPL autoload function
      */
-    static public function register($pluginPrefix, $pluginLoader)
+    static public function register(string $pluginPrefix, array $pluginLoader)
     {
         $autoloader = new Middleware_Autoload($pluginPrefix, $pluginLoader);
         spl_autoload_register(array($autoloader, 'autoload'));
     }
 
-    public function __construct($pluginPrefix, $pluginLoader)
+    public function __construct(string $pluginPrefix, array $pluginLoader)
     {
         $this->_pluginPrefix = $pluginPrefix;
         $this->_pluginLoader = $pluginLoader;
@@ -20,11 +22,8 @@ class Middleware_Autoload
 
     /**
      * Load class source code
-     *
-     * @param string $class
-     * @return bool
      */
-    public function autoload($class)
+    public function autoload(string $class): bool
     {
         if (strpos($class, $this->_pluginPrefix) === 0) {
             return call_user_func($this->_pluginLoader, str_replace($this->_pluginPrefix, '', $class));

@@ -725,7 +725,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
      * @return Middleware_JsonClient
      * @throws Exception
      */
-    final private function _getClient()
+    private function _getClient()
     {
         if ( ! $this->_client) {
             $this->_client = new Middleware_JsonClient(
@@ -750,7 +750,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
      * @return string Example: "http://example.com/"
      * @throws Exception
      */
-    final private function _getBaseUrl()
+    private function _getBaseUrl()
     {
         $baseUrl = trim($this->middleware->getConfig('middleware/system/base_url'));
         if ( ! $baseUrl) {

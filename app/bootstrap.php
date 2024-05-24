@@ -22,7 +22,7 @@ final class Middleware
     private $_info;
 
     /** @var null|string */
-    private $_plugin;
+    private string $_plugin;
     private $_pluginInstance;
 
     /** @var resource[] */
@@ -33,7 +33,7 @@ final class Middleware
     /** @var array */
     private $_eventQueue = [];
 
-    public function __construct($plugin, $debug = FALSE)
+    public function __construct(string $plugin, bool $debug = FALSE)
     {
         // Ensure that user cannot instantiate Middleware
         if (self::$_instance) {
