@@ -4,8 +4,13 @@ if (php_sapi_name() !== 'cli' || ! isset($argv) || ! is_array($argv) || ! isset(
 }
 
 $usage = "
-Usage: bin/mwrun <plugin> <method>|--info|--list|--listen [--debug]
-  --list                 List all methods that can be invoked from the command line
+Usage:
+
+bin/mwrun --list-plugins
+  --list-plugins         List all plugins that are detected
+
+bin/mwrun <plugin> <method>|--info|--list-actions|--list-plugins|--listen [--debug]
+  --list-actions         List all methods that can be invoked from the command line
   --listen               Connect to Redis server for receiving ShipStream events
   --respond-url          Show url for receiving ShipStream events
   --webhook-url          Show url for receiving third-party webhooks
@@ -22,11 +27,37 @@ if ( ! $debug && $argc == 4 && $argv[3] == '--debug') {
     $debug = TRUE;
     array_pop($argv);
 }
-if ($argc <= 2) {
+if ($argc <= 1) {
     die($usage);
 }
 
 try {
+    if ($argv[1] === '--list-plugins') {
+        require 'Varien/Simplexml/Element.php';
+        printf("%40s%40s\n", 'Plugin Code', 'Plugin Name');
+        printf("%40s%40s\n", '-----------', '-----------');
+        foreach (glob(__DIR__.'/app/etc/modules/*.xml') as $file) {
+            $moduleConfig = simplexml_load_file($file, 'Varien_Simplexml_Element'); /* @var $moduleConfig Varien_Simplexml_Element */
+            foreach ($moduleConfig->modules->children() as $module) {
+                $pluginCode = $module->getName();
+                if ($module->active != 'true') {
+                    continue;
+                }
+                $pluginFile = __DIR__.'/app/code/community/'.str_replace('_', '/', $pluginCode).'/etc/plugin.xml';
+                if (file_exists($pluginFile)) {
+                    $pluginConfig = simplexml_load_file($pluginFile, 'Varien_Simplexml_Element'); /* @var $pluginConfig Varien_Simplexml_Element */
+                    $pluginName = $pluginConfig->{$pluginCode}->info->name;
+                    printf("%40s%40s\n", $pluginCode, $pluginName);
+                } else {
+                    echo "$pluginFile not found for $pluginCode\n";
+                }
+            }
+        }
+        exit;
+    }
+    if ($argc <= 2) {
+        die($usage);
+    }
     $plugin = trim(strval($argv[1]));
     $middleware = new Middleware($plugin, $debug);
     if (empty($argv[2])) {
@@ -71,15 +102,19 @@ try {
             echo "Reconnecting...";
             sleep(3);
         }
-    } else if ($method === '--list') {
-        $reflection = new ReflectionClass($plugin.'_Plugin');
+    } else if ($method === '--list-actions') {
+        $reflection = new ReflectionClass($plugin . '_Plugin');
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
         foreach ($methods as $method) {
             if (in_array($method->name, ['yieldWebhook', 'getTimeZone', 'oauthGetTokenData', 'oauthTest'])) {
                 continue;
             }
             if ( ! $method->getParameters() && ! $method->getReturnType()) {
-                echo "$method->name\n    {$method->getDocComment()}\n";
+                $lines = explode("\n", $method->getDocComment());
+                $lines = array_filter($lines, function($line) {
+                    return ! preg_match('#\s*(/\*\*|\*/|\* @.*|\*)\s*$#', $line);
+                });
+                echo "$method->name\n".implode("\n", $lines)."\n";
             }
         }
     } else if ($method === '--crontab') {
