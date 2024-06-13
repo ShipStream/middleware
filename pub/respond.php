@@ -39,14 +39,16 @@ try {
     if ( ! $message) {
         throw new Exception('Message not specified.', 400);
     }
+    $message = new Varien_Object($message);
 
     $middleware->log(sprintf('Received webhook for %s topic with message: %s', $topic, $json), 'webhooks.log');
     $middleware->respond($topic, $message);
-} catch (Exception $e) {
+} catch (Throwable $e) {
     if (empty($middleware)) {
         error_log($e->getMessage());
     } else {
         $middleware->logException($e);
     }
     http_response_code($e->getCode() ?: 500);
+    echo "ERROR: {$e->getMessage()}";
 }

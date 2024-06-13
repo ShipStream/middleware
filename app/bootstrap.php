@@ -162,12 +162,9 @@ final class Middleware
     /**
      * Have the plugin respond to an event
      *
-     * @param string $topic
-     * @param array $message
-     * @return void
      * @throws Exception
      */
-    public function respond($topic, $message)
+    public function respond(string $topic, Varien_Object $message): void
     {
         list($resource, $event) = explode(':', $topic, 2);
         if ( ! $this->getConfig("plugin/{$this->_plugin}/events/{$resource}/{$event}") && $topic != 'test:ping') {
@@ -364,10 +361,10 @@ final class Middleware
     /**
      * Write exception to log
      *
-     * @param Exception $e
+     * @param Throwable $e
      * @return void
      */
-    public function logException(Exception $e)
+    public function logException(Throwable $e)
     {
         $this->log("\n" . $e->__toString());
     }
