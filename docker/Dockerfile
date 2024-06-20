@@ -2,9 +2,11 @@ FROM php:8.2-fpm
 
 # Install SOAP
 RUN apt-get update -y \
-  && apt-get install -y libxml2-dev \
+  && apt-get install -y libxml2-dev libpcre3-dev \
   && apt-get clean -y \
-  && docker-php-ext-install soap
+  && docker-php-ext-install soap \
+  && pecl install oauth \
+  && docker-php-ext-enable oauth
 
 COPY php.ini /usr/local/etc/php/conf.d/zz-shipstream.ini
 
