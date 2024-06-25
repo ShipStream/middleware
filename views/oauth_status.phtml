@@ -1,5 +1,5 @@
 <?php /** @var $plugin Plugin_Abstract */ ?>
-<html>
+<html lang="en">
 <head>
     <title>OAuth Connection</title>
 </head>
@@ -23,8 +23,10 @@
                 <?php echo renderOauthTestData($plugin) ?><br />
                 <?php echo getOauthDisconnectButton($plugin) ?>
             <?php endif ?>
+        <?php elseif ($buttonHtml = $plugin->oauthGetConnectButton()): ?>
+            <?php echo $buttonHtml ?>
         <?php else: ?>
-            <?php echo $plugin->oauthGetConnectButton() ?>
+            <?php echo 'The oauthGetConnectButton method is not implemented.' ?>
         <?php endif ?>
     <?php endif ?>
 </body>

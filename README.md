@@ -1101,9 +1101,9 @@ $this->removeCache('some_data');
 
 ## OAuth
 
-Several OAuth methods are defined in the interface to provide an abstracted support for performing OAuth "Client Credentials"
-type authentication whereby the user authenticates and authorizes the plugin through a redirect to the third-party system
-with which the plugin is integrating. These methods are:
+Several OAuth methods are defined in the interface to provide an abstracted support for performing authentication
+workflows whereby the user authenticates and authorizes the plugin through a redirect to the third-party system with
+which the plugin is integrating. These methods are:
 
 - oauthHandleRedirect(request: array): void
 - oauthGetRedirectUrl(area: string, bypassGateway: bool): string
@@ -1115,7 +1115,22 @@ with which the plugin is integrating. These methods are:
 - oauthValidateConfig(): void
 - oauthTest(): string[]
 
-Therefore, it should not be necessary to write a custom controller for each new OAuth integration as these methods should be able to handle the redirection and capture of the token data in a way that provides enough flexibility to handle any typical OAuth provider. 
+Therefore, it should not be necessary in most cases to write a custom controller for each new OAuth integration as these
+methods should be able to handle the redirection and capture of the token data in a way that provides enough flexibility
+to handle any typical OAuth provider.
+
+A rudimentary user interface is provided to render the OAuth connection button and handle the OAuth redirect and token
+response. Configure your plugin in `app/etc/local.xml` and then visit your middleware instance in a browser to see the
+OAuth page at `<middleware/system/base_url>/oauth.php?plugin=<plugin-code>`.
+
+The page that the OAuth flow will return to is `<middleware/system/base_url>/oauth.php?plugin=<plugin-code>&action=redirect`.
+Therefore, you can test your OAuth connection by visiting the OAuth page and clicking the "Connect" button and then the
+app upon authenticating should redirect you to the redirect page which is handled by the plugin's `oauthHandleRedirect()` method.
+
+Note, if the app makes a `POST` to another url after the OAuth flow is complete, you can set up a [Callback](#third-party-remote-callbacks)
+to handle this. Be careful to authenticate the callback request to ensure it is coming from the app and not a malicious
+actor. For example, generate a random string and save it in the state data and then require that the callback include
+this string in the callback payload or else reject the request.
 
 ## Diagnostics
 
