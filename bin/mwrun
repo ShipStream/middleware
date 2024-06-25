@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec docker-compose run --rm cli /usr/local/bin/php /var/www/html/run.php "$@"
+exec docker compose run -t --rm cli /usr/local/bin/php /var/www/html/run.php "$@"

@@ -21,6 +21,7 @@
     "ext-yaml":"*",
     "ext-zip": "*",
     "anik/loguzz": "^1.2",
-    "monolog/monolog": "^2.2"
+    "monolog/monolog": "^2.2",
+    "firebase/php-jwt": "^6.2"
   }
 }

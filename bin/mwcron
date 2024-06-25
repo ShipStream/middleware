@@ -1,3 +1,3 @@
 #!/bin/sh
 PLUGIN=${1?"Please specify a plugin."}
-exec docker-compose run --rm -e PLUGIN="$PLUGIN" cron /cron.sh
+exec docker compose run --rm -e PLUGIN="$PLUGIN" cron /cron.sh

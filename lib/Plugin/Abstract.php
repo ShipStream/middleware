@@ -24,6 +24,17 @@ abstract class Plugin_Abstract implements Plugin_Interface
     const INFO    = 6;  // Informational: informational messages
     const DEBUG   = 7;  // Debug: debug messages
 
+    const PCD_TYPE_NAME = 'name';
+    const PCD_TYPE_COMPANY = 'company';
+    const PCD_TYPE_STREET = 'street';
+    const PCD_TYPE_TELEPHONE = 'telephone';
+    const PCD_TYPE_EMAIL = 'email';
+
+    const DOCUMENT_FORMAT_ZPL = 'zpl';
+    const DOCUMENT_FORMAT_PDF = 'pdf';
+
+    const STATE_KEY_OAUTH_NONCE = 'oauth_nonce';
+
     /** @var string */
     private $code;
     
@@ -39,7 +50,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
     /**
      * @param string $code
      */
-    final public function __construct($code)
+    final public function __construct(string $code)
     {
         $this->code = $code;
     }
@@ -47,18 +58,11 @@ abstract class Plugin_Abstract implements Plugin_Interface
     /**
      * @return string
      */
-    final protected function getAppTitle()
+    final protected function getAppTitle(): string
     {
         return $this->middleware->getConfig('middleware/system/app_title') ?: 'ShipStream';
     }
 
-    /**
-     * Allow a plugin to deactivate itself
-     */
-    final public function deactivateSelf(): void
-    {
-        return;
-    }
 
     /*
      * Abstract methods which may be overridden by plugins
@@ -127,29 +131,16 @@ abstract class Plugin_Abstract implements Plugin_Interface
         return FALSE;
     }
 
+    public function isOauthEnabled(): bool
+    {
+        return $this->getPluginInfo('info/oauth/enabled') && $this->getConfig('use_oauth');
+    }
+
     /**
      * @param array $request
      * @return void
      */
     public function oauthHandleRedirect($request) {}
-
-    /**
-     * @param null|string $area
-     * @param bool $bypassGateway
-     * @return string
-     */
-    public function oauthGetRedirectUrl($area = NULL, $bypassGateway = FALSE)
-    {
-        $params = array_merge(
-            ['plugin' => $this->code],
-            ['action' => 'redirect']
-        );
-        $query = [];
-        foreach ($params as $key => $value) {
-            $query[] = $key.'/'.$value;
-        }
-        return $this->_getBaseUrl().'oauth.php/'.implode('/', $query).'/';
-    }
 
     /**
      * Get the url which starts the OAuth connection
@@ -176,25 +167,6 @@ abstract class Plugin_Abstract implements Plugin_Interface
     public function oauthDisconnect($params = array()) {}
 
     /**
-     * @param string $accessToken
-     * @return mixed
-     * @throws Exception
-     */
-    public function oauthSetTokenData($accessToken)
-    {
-        return $this->setState('oauth_access_token', $accessToken);
-    }
-
-    /**
-     * @return string
-     * @throws Exception
-     */
-    public function oauthGetTokenData()
-    {
-        return $this->getState('oauth_access_token');
-    }
-
-    /**
      * @return void
      * @throws Exception
      */
@@ -206,9 +178,129 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     public function oauthTest() {}
 
+    /**
+     * Return true  if the user should see the OAuth connect button while not connected.
+     * Return false if OAuth button should not be displayed (e.g. if using custom API key while in OAuth mode)
+     * @return bool
+     */
+    public function oauthReadyToConnect(): bool
+    {
+        return TRUE;
+    }
+
+    /**
+     * @return Plugin_IngestResult
+     * @throws Plugin_Exception
+     */
+    public function ingestPurchaseOrderMessage(Message $message): Plugin_IngestResult
+    {
+        throw new Plugin_Exception('Unsupported message type.', NULL, NULL, 'Ingest message');
+    }
+
+    /**
+     * @return Plugin_IngestResult
+     * @throws Plugin_Exception
+     */
+    public function ingestAsnMessage(Message $message): Plugin_IngestResult
+    {
+        throw new Plugin_Exception('Unsupported message type.', NULL, NULL, 'Ingest message');
+    }
+
     /*
      * Available helper methods which CANNOT be overridden by plugins
      */
+
+    /**
+     * Allow a plugin to deactivate itself
+     */
+    final public function deactivateSelf(): void
+    {
+        return;
+    }
+
+    /**
+     * Retrieve OAuth url
+     *
+     * @param array $params
+     * @return string
+     */
+    final public function oauthGetUrl($params = array())
+    {
+        $params = array_merge(
+            $params,
+            ['plugin' => $this->code]
+        );
+        return $this->_getBaseUrl().'oauth.php?'.http_build_query($params, '', '&');
+    }
+
+    /**
+     * @param null|string $area
+     * @param bool $bypassGateway
+     * @return string
+     */
+    final public function oauthGetRedirectUrl($area = NULL, $bypassGateway = FALSE)
+    {
+        $params = array_merge(
+            ['plugin' => $this->code],
+            ['action' => 'redirect']
+        );
+        $query = [];
+        foreach ($params as $key => $value) {
+            $query[] = $key.'/'.$value;
+        }
+        return $this->_getBaseUrl().'oauth.php/'.implode('/', $query).'/';
+    }
+
+    /**
+     * @param array $stateData
+     * @return array
+     */
+    final function oauthGetStateData(array $stateData): string
+    {
+        $nonce = bin2hex(random_bytes(256));
+        $this->setState(self::STATE_KEY_OAUTH_NONCE, $nonce);
+        $stateData['nonce'] = $nonce;
+        return \Firebase\JWT\JWT::urlsafeB64Encode(json_encode($stateData));
+    }
+
+    /**
+     * @param string $data
+     * @return array
+     */
+    final function oauthDecodeStateData(string $data): array
+    {
+        if ( ! $data) {
+            throw new Plugin_Exception('Missing state data.');
+        }
+        try {
+            $data = json_decode(\Firebase\JWT\JWT::urlsafeB64Decode($data), TRUE, 2, JSON_THROW_ON_ERROR);
+        } catch (Exception $e) {
+            throw new Plugin_Exception('Invalid state data.');
+        }
+        if (empty($data['nonce']) || $data['nonce'] !== $this->getState(self::STATE_KEY_OAUTH_NONCE)) {
+            throw new Plugin_Exception('Invalid nonce.');
+        }
+        return $data;
+    }
+
+    /**
+     * @param string $accessToken
+     * @return mixed
+     * @throws Exception
+     */
+    final public function oauthSetTokenData($accessToken)
+    {
+        return $this->setState('oauth_access_token', $accessToken);
+    }
+
+    /**
+     * @return string
+     * @throws Exception
+     */
+    final public function oauthGetTokenData()
+    {
+        return $this->getState('oauth_access_token');
+    }
 
     /**
      * Respond to webhook early to avoid timeouts
@@ -406,18 +498,53 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
-     * Retrieve OAuth url
-     *
-     * @param array $params
+     * @param Exception|string $param1
+     * @param array|null $headers
+     * @param string|null $prefix
+     */
+    final public function debugLog($param1, $headers = null, $prefix = '')
+    {
+        if ($param1 instanceof Exception) {
+            $this->log($prefix . $param1->getMessage(), self::DEBUG);
+        } else if (is_array($headers)) {
+            $_headers = [];
+            foreach ($headers as $key => $value) {
+                $_headers[] = "$key: $value";
+            }
+            $this->log(sprintf("%s%s\n\n%s\n", $prefix, implode("\n", $_headers), $param1), self::DEBUG);
+        } else {
+            $this->log($prefix . $param1 . "\n", self::DEBUG);
+        }
+    }
+
+    /**
      * @return string
      */
-    final public function oauthGetUrl($params = array())
+    final public function get3PLName(): string
     {
-        $params = array_merge(
-            $params,
-            ['plugin' => $this->code]
-        );
-        return $this->_getBaseUrl().'oauth.php?'.http_build_query($params, '', '&');
+        return Mage::getDefaultConfig('general/store_information/name');
+    }
+
+    /**
+     * @return string
+     */
+    final public function getMerchantName(): string
+    {
+        return Mage::getWebsiteConfig('general/store_information/name', $this->getWebsiteId());
+    }
+
+    final public function getRequestId(): string
+    {
+        return Mage::registry('logger_request_id');
+    }
+
+    /**
+     * Returns the base url for all external requests WITHOUT a trailing /
+     * @throws Plugin_Exception
+     */
+    final public function getBaseExternalUrl(bool $skipTest = FALSE): string
+    {
+        return $this->_getBaseUrl();
     }
 
     /**
@@ -495,7 +622,38 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function addEvent($method, array $data, $executeAt = NULL)
     {
+        if (empty($method) || ! is_string($method)) {
+            throw new Plugin_Exception('Invalid "method" event argument.');
+        }
+        if ($executeAt && ( ! $executeAt instanceof DateTimeInterface || ! is_int($executeAt))) {
+            throw new Plugin_Exception('Invalid "execute_at" event argument.');
+        }
         $this->middleware->addEventQueue([$method, new Varien_Object($data), $executeAt]);
+    }
+
+    /**
+     * Add multiple events to the plugin queue
+     *
+     * @param array{method: string, data: array, execute_at: null|int|DateTime} $events
+     * @return void
+     */
+    final public function addEvents(array $events): void
+    {
+        foreach ($events as $event) {
+            $this->addEvent($event['method'], $event['data'], $event['execute_at'] ?? NULL);
+        }
+    }
+
+    /**
+     * Call an event immediately
+     *
+     * @param string $method
+     * @param array $data
+     * @return void
+     */
+    final public function callEvent(string $method, array $data): void
+    {
+        $this->$method($data);
     }
 
     /**
@@ -599,33 +757,29 @@ abstract class Plugin_Abstract implements Plugin_Interface
     }
 
     /**
-     * @param array $stateData
-     * @return array
+     * @param int $messageId
+     * @return Message|null
      */
-    function oauthGetStateData(array $stateData): string
+    final public function getMessage(int $messageId): ?Message
     {
         throw new Exception('Not implemented.');
     }
 
     /**
-     * @param string $data
-     * @return array
+     * @param int $orderEntityId
+     * @return MWE_EDI_Model_Resource_Message_Collection|MWE_EDI_Model_Message[]
      */
-    function oauthDecodeStateData(string $data): array
+    final public function getOrderMessages(int $orderEntityId): ?MWE_EDI_Model_Resource_Message_Collection
     {
         throw new Exception('Not implemented.');
     }
 
     /**
-     * Call an event immediately
-     *
-     * @param string $method
-     * @param array $data
-     * @return void
+     * @return Document
      */
-    function callEvent(string $method, array $data): void
+    final public function createDocument(): Document
     {
-        $this->$method($data);
+        throw new Exception('Not implemented.');
     }
 
     /**
@@ -676,6 +830,46 @@ abstract class Plugin_Abstract implements Plugin_Interface
         throw new Exception('Not implemented.');
     }
 
+    /**
+     * Ingest an EDI message
+     *
+     * @param Varien_Object $data
+     * @return void
+     * @throws Exception
+     * @throws Plugin_Exception
+     */
+    final public function ingestMessageEvent(Varien_Object $data): void
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * @param Document $document
+     * @return void
+     * @throws Plugin_Exception
+     * @throws Integration_Exception
+     */
+    final public function emitDocument(Document $document): void
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * @return MWE_Integration_Model_Subscription|null
+     */
+    final public function getIntegrationSubscription(): ?MWE_Integration_Model_Subscription
+    {
+        throw new Exception('Not implemented.');
+    }
+
+    /**
+     * @param int $warehouseId
+     * @return DateTimeZone
+     */
+    final public function getWarehouseTimeZone(int $warehouseId): DateTimeZone
+    {
+        return new DateTimeZone('America/New_York');
+    }
 
     /**
      * Get warehouse address
@@ -692,10 +886,31 @@ abstract class Plugin_Abstract implements Plugin_Interface
         $address = array_map('strval', (array)$address);
         foreach (['street', 'city', 'region', 'country', 'postcode'] as $field) {
             if (empty($address[$field])) {
-                throw new Exception('Addres details missing field: '.$field);
+                throw new Exception('Address details missing field: '.$field);
             }
         }
         return $address;
+    }
+
+    /**
+     * Get SCAC by manifest courier code
+     *
+     * @param string $manifestCode
+     * @return string|null
+     */
+    final public function getScacByManifestCode(string $manifestCode): ?string
+    {
+        // Not a full list, just enough for testing
+        switch ($manifestCode) {
+            case 'ups':
+                return 'UPS';
+            case 'fedex':
+                return 'FDXE';
+            case 'usps':
+                return 'USPS';
+            default:
+                return NULL;
+        }
     }
 
     /**

@@ -148,7 +148,7 @@ Installation
    $ bin/mwrun --list-plugins
    $ bin/mwrun ShipStream_Test --list-actions
    $ bin/mwrun ShipStream_Test update_ip
-   Creating middleware_cli_run ... done
+   ```
    Agent 007's IP is x.x.x.x, last updated at 2020-01-19T14:41:23+00:00.
    ```
 

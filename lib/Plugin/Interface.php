@@ -26,6 +26,8 @@ interface Plugin_Interface
      */
     function handleWebhook($query, $headers, $data);
 
+    function isOauthEnabled(): bool;
+
     /**
      * @param array $request
      * @return void
