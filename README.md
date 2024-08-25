@@ -569,6 +569,12 @@ plugin is no longer active.
 - `deactivate(): string[]` - Return an array of messages for the end-user.
 - `reinstall(): array` - Non-destructively update the plugin state - for example, will be run if the public url is updated so that webhooks and callbacks can be updated.
 
+These methods can be called with the `bin/mwrun` cli tool but in the production environment will be called automatically based on user interactions with the GUI.
+
+```shell
+$ bin/mwrun ShipStream_Test activate
+```
+
 ## ShipStream API Calls
 
 You may call ShipStream API methods from the plugin using the `call` method so there is no need to deal with
