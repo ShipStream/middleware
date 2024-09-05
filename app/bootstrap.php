@@ -505,6 +505,9 @@ final class Middleware
         header('Connection: close', TRUE);
         ob_start();
 
+        if (!$this->_pluginInstance->getPluginInfo('info/callbacks/enabled')) {
+            throw new Exception('Callbacks are not enabled for this plugin.', 409);
+        }
         if (empty($query['secret_key'])) {
             throw new Exception('Unknown secret key.', 409);
         }
