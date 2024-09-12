@@ -148,11 +148,12 @@ Installation
    $ bin/mwrun --list-plugins
    $ bin/mwrun ShipStream_Test --list-actions
    $ bin/mwrun ShipStream_Test update_ip
-   ```
    Agent 007's IP is x.x.x.x, last updated at 2020-01-19T14:41:23+00:00.
    ```
 
-The source code for the `ShipStream_Test` plugin will be located at `.modman/plugin-test`.
+The source code for the `ShipStream_Test` plugin will be located at `.modman/plugin-test` because the `bin/modman clone ...`
+command effectively performs `(cd .modman; git clone ...); bin/modman deploy ...`. The `modman` utility creates the symlinks
+as defined in the module's `modman` file so your repository files can all stay in one place for easy git workflows.
 
 ### Advanced
 
