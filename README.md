@@ -113,12 +113,17 @@ Installation
    $ chmod go+rwX tmp logs
    $ bin/update
    ```
-   
-2. Copy and edit the sample config file to add your configuration:
+
+2. Setup the API connection the ShipStream instance:
    ```
    $ cp app/etc/local.sample.xml app/etc/local.xml
+   $ chmod 666 app/etc/local.xml
+   $ bin/mwrun --setup-api
+   ...
+   API credentials saved to /var/www/html/app/etc/local.xml
    ```
-   Example:
+   
+   Your `app/etc/local.xml` file should look something like this:
    ```xml
    <?xml version="1.0"?>
    <config>
@@ -131,29 +136,40 @@ Installation
            <timezone>America/New_York</timezone>
          </system>
          <api>
-           <base_url>https://example.shipstream.app/api/jsonrpc</base_url>
-           <login>{api_username}</login>
-           <password>{api_password}</password>
-           <secret_key>{secret_key}</secret_key>
+           <base_url>https://example.shipstream.app/api/jsonrpc/</base_url>
+           <login>{your_api_username}</login>
+           <password>{your_api_password}</password>
+           <secret_key></secret_key>
          </api>
        </middleware>
      </default>
    </config>
    ```
    
-3. Clone the `ShipStream_Test` plugin and run the `update_ip` method to confirm a successful setup!
+3. Clone the `ShipStream_Test` plugin:
    ```
    $ bin/modman init
    $ bin/modman clone https://github.com/shipstream/plugin-test.git
    $ bin/mwrun --list-plugins
+                             Plugin Code                             Plugin Name
+                             -----------                             -----------
+                         ShipStream_Test                             Test Plugin
    $ bin/mwrun ShipStream_Test --list-actions
+   update_ip
+        * Fetches your public IP, saves it in the remote storage, fetches it and logs it.
+   ...
+   ```
+   The source code for the `ShipStream_Test` plugin will be located at `.modman/plugin-test` because the `bin/modman clone ...`
+   command effectively performs `(cd .modman; git clone ...); bin/modman deploy ...`. The `modman` utility creates the symlinks
+   as defined in the module's `modman` file so your repository files can all stay in one place for easy git workflows.
+
+4. Run the `update_ip` action for the `ShipStream_Test` plugin to confirm a successful connection:
+   ```
    $ bin/mwrun ShipStream_Test update_ip
    Agent 007's IP is x.x.x.x, last updated at 2020-01-19T14:41:23+00:00.
    ```
-
-The source code for the `ShipStream_Test` plugin will be located at `.modman/plugin-test` because the `bin/modman clone ...`
-command effectively performs `(cd .modman; git clone ...); bin/modman deploy ...`. The `modman` utility creates the symlinks
-as defined in the module's `modman` file so your repository files can all stay in one place for easy git workflows.
+   
+If you completed all of the steps above successfully, your environment is working properly and you can now start developing your plugin!
 
 ### Advanced
 
@@ -164,10 +180,13 @@ You can use a `.env` file in the root of the project to set some configuration o
 
 ### HTTPS Tunnel
 
-If you need to support callbacks and webhooks from systems not in your local development environment you need your
+If you need to support [events](#shipstream-events), [callbacks](#third-party-remote-callbacks) or [webhooks](#third-party-webhooks)
+(all use http requests from systems not in your local development environment), you need your middleware
 url to be publicly accessible. One easy and free way to accomplish this is to use [ngrok](https://ngrok.com) or [localhost.run](https://localhost.run)
-which are simple tunneling services. The ngrok service uses its own command line interface and is more robust, while
-localhost.run only requires the common `ssh` command.
+which are simple tunneling services which can expose your local development environment to a publicly-accessible https url.
+
+The ngrok service uses its own command line interface and is more robust, while localhost.run only requires the common `ssh` command.
+***Tip:*** Create an account with ngrok to get one free persistent subdomain which makes it easier to configure webhooks. 
 
 ```
 $ ngrok http 80
@@ -213,8 +232,25 @@ plans this will only last a few hours before it needs to be refreshed with a new
 </config>
 ```
 
-***NOTE:***
-If you update your `base_url`, you may need to also re-register that url for any plugins that make use of callbacks. 
+***Note:***
+Any time your public url changes (e.g. your proxy disconnects and you reconnect with a new randomly generated url),
+you will need to register or re-register a webhook for any plugins that you are developing so that you can receive the real-time events.
+
+1. Update `app/etc/local.xml` with the new `base_url` value as described above.
+2. With your https tunnel running, register a webhook for the plugin so you can receive events:
+   ```
+   $ bin/mwrun ShipStream_Test --setup-webhook
+   Secret Key saved to /var/www/html/app/etc/local.xml
+   Webhook created for https://....
+   ```
+
+3. Create an order for the same merchant as your API key, wait a few seconds for the webhook to process, and check the logs for the event:
+   ```
+   $ tail logs/webhooks.log 
+   2024-09-13T16:10:58+00:00 Received webhook for order:created topic with message: {"merchant_id":"9","merchant_code":"acme_inc","topic":"order:created","
+   $ tail logs/main.log
+   2024-09-13T16:10:58+00:00 Order # 1100000116 was created.
+   ```
 
 Developer Guide
 ===============

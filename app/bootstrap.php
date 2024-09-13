@@ -259,10 +259,11 @@ final class Middleware
      * Retrieve configuration value
      *
      * @param string $path
-     * @return null|string
+     * @param bool $asString
+     * @return null|string|Varien_Simplexml_Element
      * @throws Exception
      */
-    public function getConfig($path)
+    public function getConfig($path, $asString = TRUE)
     {
         if (empty($path)) {
             return NULL;
@@ -295,7 +296,10 @@ final class Middleware
         if ($result === FALSE) {
             return NULL;
         }
-        return $result->__toString();
+        if ($asString) {
+            return $result->__toString();
+        }
+        return $result;
     }
 
     /**
