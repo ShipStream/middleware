@@ -13,12 +13,19 @@ set_include_path(BP . DS . 'lib');
 include_once 'Middleware' . DS . 'Autoload.php';
 require BP.DS.'vendor/autoload.php';
 
+// Some classes that just need to be defined to suppress IDE errors
+class Plugin_IngestResult {}
+class MWE_EDI_Model_Message {}
+class MWE_EDI_Model_Document {}
+class MWE_Integration_Model_Subscription {}
+class MWE_EDI_Model_Resource_Message_Collection {}
+
 final class Middleware
 {
-    /** @var null|SimpleXMLElement */
+    /** @var null|Varien_Simplexml_Element */
     private $_config;
 
-    /** @var null|SimpleXMLElement */
+    /** @var null|Varien_Simplexml_Element */
     private $_info;
 
     /** @var null|string */
@@ -33,6 +40,8 @@ final class Middleware
     /** @var array */
     private $_eventQueue = [];
 
+    private string $_requestId;
+
     public function __construct(string $plugin, bool $debug = FALSE)
     {
         // Ensure that user cannot instantiate Middleware
@@ -42,6 +51,7 @@ final class Middleware
         self::$_instance = $this;
 
         $this->_plugin = $plugin;
+        $this->_requestId = bin2hex(random_bytes(4));
 
         // Load plugin instance
         Middleware_Autoload::register($plugin, array($this, 'loadPluginClass'));
@@ -56,6 +66,11 @@ final class Middleware
         if (PHP_SAPI === 'cli' && $debug) {
             echo "Debug mode is ENABLED\n";
         }
+    }
+
+    public function getRequestId(): string
+    {
+        return $this->_requestId;
     }
 
     /**

@@ -9,6 +9,8 @@ use GuzzleHttp\Middleware;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Loguzz\Middleware\LogMiddleware;
+use MWE_EDI_Model_Message as Message;
+use MWE_EDI_Model_Document as Document;
 
 /**
  * Abstract class for a plugin
@@ -522,7 +524,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function get3PLName(): string
     {
-        return Mage::getDefaultConfig('general/store_information/name');
+        return $this->middleware->getConfig('middleware/system/3pl_name');
     }
 
     /**
@@ -530,12 +532,12 @@ abstract class Plugin_Abstract implements Plugin_Interface
      */
     final public function getMerchantName(): string
     {
-        return Mage::getWebsiteConfig('general/store_information/name', $this->getWebsiteId());
+        return $this->middleware->getConfig('middleware/system/merchant_name') ?: 'Undefined Merchant';
     }
 
     final public function getRequestId(): string
     {
-        return Mage::registry('logger_request_id');
+        return $this->middleware->getRequestId();
     }
 
     /**

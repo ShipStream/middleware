@@ -3,8 +3,6 @@
   "description": "Lightweight dev environment for ShipStream Merchant Plugins",
   "type": "project",
   "require": {
-    "php": "~7.4.0",
-    "guzzlehttp/guzzle": "^6.2.1",
     "ext-bcmath": "*",
     "ext-dom": "*",
     "ext-gd": "*",
@@ -20,8 +18,14 @@
     "ext-sodium": "*",
     "ext-yaml":"*",
     "ext-zip": "*",
-    "anik/loguzz": "^1.2",
+    "guzzlehttp/guzzle": "^7.0",
+    "anik/loguzz": "^4.0",
     "monolog/monolog": "^2.2",
     "firebase/php-jwt": "^6.2"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2"
+    }
   }
 }
