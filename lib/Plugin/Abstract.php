@@ -683,7 +683,7 @@ abstract class Plugin_Abstract implements Plugin_Interface
      * @param array $arguments - A PHP hash with the keys being names of arguments and values being JSON-serializable values which will be converted to Javascript objects.
      * @param string $returnArg - The named argument which should be returned
      * @return array
-     * @throws Mage_Core_Exception
+     * @throws Plugin_Exception|Exception
      */
     final public function applyScript($snippet, $arguments, $returnArg)
     {
@@ -697,10 +697,11 @@ abstract class Plugin_Abstract implements Plugin_Interface
      * @param string $snippet - A snippet of Javascript code.
      * @param array $newOrderData
      * @param array $arguments - A PHP hash with the keys being names of additional arguments and values being JSON-serializable values which will be converted to Javascript objects.
+     * @param null $output
      * @return array
-     * @throws Mage_Core_Exception
+     * @throws Plugin_Exception|Exception
      */
-    final public function applyScriptForOrder($snippet, $newOrderData, $arguments)
+    final public function applyScriptForOrder($snippet, $newOrderData, $arguments, &$output = NULL)
     {
         // Do nothing, only supported in production
         return $newOrderData;
@@ -932,6 +933,11 @@ abstract class Plugin_Abstract implements Plugin_Interface
             $this->_isDebug = (bool) $isDebug;
         }
         return $result;
+    }
+
+    final public function isDeveloperMode(): bool
+    {
+        return TRUE;
     }
 
     /**
